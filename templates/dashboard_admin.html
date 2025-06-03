@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
+  </div>
+  <ul class="sidebar-nav">
+    <!-- La classe 'active' sera gérée par JavaScript ou par une logique Jinja si vous utilisez layout.html -->
+    <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+    <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users"></i> Gérer Patients</a></li>
+    <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
+    <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Gérer Consultations</a></li>
+    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
+    <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+  </ul>
+</div>
+
+<div class="main-content">
+  <header>
+    <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord</h1>
+    <div class="user-info">
+      <span>Admin User <i class="fas fa-user-circle"></i></span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="stats-grid">
+       <div class="stat-card patients">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+          <p><strong>Patients Enregistrés</strong></p>
+          <h2>{{ nb_patients }}</h2>
+        </div>
+      </div>
+      <div class="stat-card medecins">
+        <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+        <div class="stat-info">
+          <p><strong>Médecins Actifs</strong></p>
+          <h2>{{ nb_medecins }}</h2>
+        </div>
+      </div>
+      <div class="stat-card consultations">
+        <div class="stat-icon"><i class="fas fa-file-medical-alt"></i></div>
+        <div class="stat-info">
+          <p><strong>Consultations Total</strong></p>
+          <h2>{{ nb_consultations }}</h2>
+        </div>
+      </div>
+      <div class="stat-card utilisateurs">
+        <div class="stat-icon"><i class="fas fa-users-cog"></i></div>
+        <div class="stat-info">
+          <p><strong>Utilisateurs du Système</strong></p>
+          <h2>{{ nb_utilisateurs }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-container">
+          <h3>Statistiques Générales</h3>
+          <canvas id="statsChart"
+                  data-nb-patients="{{ nb_patients }}"
+                  data-nb-medecins="{{ nb_medecins }}"
+                  data-nb-consultations="{{ nb_consultations }}"
+                  data-nb-utilisateurs="{{ nb_utilisateurs }}"></canvas>
+        </div>
+        <div class="chart-container">
+            <!-- Titre mis à jour pour refléter le contenu réel -->
+            <h3>Évolution Mensuelle des Consultations</h3>
+            <!-- AJOUT DES ATTRIBUTS data-* POUR LES DONNÉES RÉELLES -->
+            <canvas id="anotherChart"
+                    data-labels='{{ monthly_consultation_labels | safe }}'
+                    data-values='{{ monthly_consultation_data | safe }}'></canvas>
+        </div>
+    </div>
+
+    <div class="recent-consultations">
+      <h3><i class="fas fa-notes-medical"></i> Consultations Récentes</h3>
+      <div class="table-actions">
+        <a href="{{ url_for('add_consultation') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouvelle Consultation</a>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Médecin</th>
+            <th>Date</th>
+            <th>Diagnostic Principal</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for consult in consultations %}
+          <tr>
+            <td><i class="fas fa-user-injured"></i> {{ consult.nom_patient }}</td>
+            <td><i class="fas fa-user-md"></i> Dr. {{ consult.nom_medecin }}</td>
+            <td><i class="fas fa-calendar-alt"></i> {{ consult.date }}</td>
+            <td>{{ consult.diagnostic }}</td>
+            <td class="actions">
+              <!-- Utilisation de url_for pour les liens d'action -->
+              <a href="{{ url_for('view_consultation', consult_id_str=consult.id) }}" title="Voir"><i class="fas fa-eye"></i></a>
+              <a href="{{ url_for('edit_consultation', consult_id_str=consult.id) }}" title="Modifier"><i class="fas fa-edit"></i></a>
+              <!-- Formulaire pour la suppression (méthode POST) -->
+              <form action="{{ url_for('delete_consultation', consult_id_str=consult.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette consultation ?');">
+                  <button type="submit" class="btn-icon-action" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" style="text-align: center;">Aucune consultation récente.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quick-actions">
+      <h3><i class="fas fa-bolt"></i> Actions Rapides</h3>
+      <a href="{{ url_for('add_patient') }}" class="btn btn-success"><i class="fas fa-user-plus"></i> Ajouter Patient</a>
+      <a href="{{ url_for('add_medecin') }}" class="btn btn-info"><i class="fas fa-user-md"></i> Ajouter Médecin</a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
