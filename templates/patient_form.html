@@ -27,7 +27,7 @@
 
 <div class="main-content">
   <header>
-    <h1><i class="fas fa-tachometer-alt"></i> Gestion des Patients - formulaire</h1>
+    <h1><i class="fas fa-users"></i> Gestion des Patients - Formulaire</h1>
     <div class="user-info">
       <span>Admin User <i class="fas fa-user-circle"></i></span>
     </div>
@@ -40,6 +40,12 @@
     {% endif %}
 
     <form method="POST">
+
+      <div class="form-group">
+        <label for="nom">CIN *</label>
+        <input type="text" id="cin" name="cin" required value="{{ patient.cin if patient else '' }}" />
+      </div>
+
       <div class="form-group">
         <label for="nom">Nom *</label>
         <input type="text" id="nom" name="nom" required value="{{ patient.nom if patient else '' }}" />

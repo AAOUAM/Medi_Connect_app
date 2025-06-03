@@ -75,3 +75,25 @@ input[type="email"]:focus {
   color: white;
   font-weight: 700;
 }
+
+.btn-cancel {
+  padding: 12px 20px;
+  background-color: #ff0000;
+  color: white;
+  font-weight: 700;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #e70707;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}

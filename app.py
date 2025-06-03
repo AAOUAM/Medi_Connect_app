@@ -1,6 +1,7 @@
 from flask import Flask, render_template, json , flash, redirect, url_for , request
 import services.mongo_service as mongo_service 
 import models.patient as Patient
+from models import medecin  
 
 
 app = Flask(__name__)
@@ -63,7 +64,18 @@ def manage_medecins():
 
 @app.route('/admin/consultations/manage')
 def manage_consultations():
-    return "Page de gestion des consultations (à implémenter)"
+  consultations = mongo_service.get_all_consultations()
+
+  for c in consultations:
+    # Récupère les noms du patient et du médecin
+    patient = mongo_service.get_patient_by_id(c['id_patient'])
+    medecin = mongo_service.get_medecin_by_id(c['id_medecin'])
+
+    # Ajoute les noms dans chaque consultation
+    c['nom_patient'] = f"{patient.get('nom', 'N/A')} {patient.get('prenom', '')}" if patient else "Inconnu"
+    c['nom_medecin'] = f"{medecin.get('nom', 'N/A')} {medecin.get('prenom', '')}" if medecin else "Inconnu"
+
+  return render_template('manage_consultations.html', consultations=consultations)
 
 @app.route('/admin/users/manage') # J'utilise /manage pour la page de liste
 def manage_users():
@@ -90,6 +102,7 @@ def add_patient():
             'adresse': request.form.get('adresse', '').strip(),
             'telephone': request.form.get('telephone', '').strip(),
             'email': request.form.get('email', '').strip(),
+            'cin': request.form.get('cin', '').strip(),
         }
 
         # Validation simple
@@ -114,6 +127,7 @@ def edit_patient(patient_id_str):
             'adresse': request.form.get('adresse', '').strip(),
             'telephone': request.form.get('telephone', '').strip(),
             'email': request.form.get('email', '').strip(),
+            'cin': request.form.get('cin', '').strip(),
         }
 
         Patient.modify_patient(patient_id_str, updated_data)
@@ -136,69 +150,104 @@ def delete_patient(patient_id_str):
     return redirect(url_for('manage_patients'))
 
 
-@app.route('/admin/patients/<patient_id_str>')
-def view_patient(patient_id_str):
-    try:
-        patient = mongo_service.get_patient_by_id(patient_id_str)  # Cette fonction doit être définie dans mongo_service
-        if not patient:
-            flash("Patient non trouvé.", "warning")
-            return redirect(url_for('manage_patients'))
-    except Exception as e:
-        print(f"Erreur lors de la récupération du patient: {e}")
-        flash("Erreur serveur.", "danger")
-        return redirect(url_for('manage_patients'))
-
-    return render_template('view_patient.html', patient=patient)
-
-
-
-# --- Routes pour Actions CRUD (Placeholders) ---
 
 
 
 
 
+
+
+# --- Routes pour MEDECINS ---
 
 @app.route('/admin/medecins/add', methods=['GET', 'POST'])
 def add_medecin():
-    return "Page pour ajouter un médecin (à implémenter)"
+    if request.method == 'POST':
+        form_data = {
+            'nom': request.form['nom'],
+            'specialite': request.form['specialite'],
+            'adresse': request.form['adresse'],
+            'num_tel': request.form.get('num_tel', '').strip(),
+            'email': request.form['email'],
+            'disponibilite': request.form.getlist('disponibilite'),
+            'experiences': request.form['experiences'],
+        }
+        medecin.create_medecin(form_data)
+        return redirect(url_for('manage_medecins'))
+
+    return render_template('medecin_form.html', medecin=None)
+
+@app.route('/admin/medecins/edit/<string:medecin_id>', methods=['GET', 'POST'])
+def edit_medecin(medecin_id):
+    medecin_data = medecin.get_medecin(medecin_id)
+    if not medecin_data:
+        return "Médecin non trouvé", 404
+
+    if request.method == 'POST':
+        updated_data = {
+            'nom': request.form['nom'],
+            'specialite': request.form['specialite'],
+            'adresse': request.form['adresse'],
+            'num_tel': request.form.get('num_tel', '').strip(),
+            'email': request.form['email'],
+            'disponibilite': request.form.getlist('disponibilite'),
+            'experiences': request.form['experiences'],
+        }
+        medecin.modify_medecin(medecin_id, updated_data)
+        return redirect(url_for('manage_medecins'))
+
+    return render_template('medecin_form.html', medecin=medecin_data)
+
+@app.route('/admin/medecins/delete/<string:medecin_id>', methods=['POST'])
+def delete_medecin(medecin_id):
+    medecin.remove_medecin(medecin_id)
+    return redirect(url_for('manage_medecins'))
+
+
+
+
+
+
+
+# --- Routes pour CONSUTLTATIONS ---
 
 @app.route('/admin/consultations/add', methods=['GET', 'POST'])
 def add_consultation():
-    # Pour GET:
-    # patients = mongo_service.get_all_patients()
-    # medecins = mongo_service.get_all_medecins()
-    # return render_template('ajouter_consultation.html', patients=patients, medecins=medecins)
-    return "Page pour ajouter une consultation (à implémenter)"
+    if request.method == 'POST':
+        form_data = {
+            'id_patient': request.form['id_patient'],
+            'id_medecin': request.form['id_medecin'],
+            'date': request.form['date'],
+            'diagnostic': request.form['diagnostic'],
+            'prescriptions': request.form['prescriptions'].split(','),  # comma-separated
+            'notes': request.form['notes']
+        }
+        mongo_service.insert_consultation(form_data)
+        return redirect(url_for('manage_consultations'))
+    
+    return render_template('consultation_form.html', consultation=None)
 
-# Routes pour les actions sur les consultations (dans le tableau du dashboard)
-# Elles nécessitent un <consult_id>
-@app.route('/view_consultation/<consult_id_str>')
-def view_consultation(consult_id_str):
-    # consult = mongo_service.get_consultation_by_id(consult_id_str) # ou une version avec détails
-    # if consult:
-    #     patient = mongo_service.get_patient_by_id(str(consult['id_patient']))
-    #     medecin = mongo_service.get_medecin_by_id(str(consult['id_medecin']))
-    #     return render_template('view_consultation.html', consultation=consult, patient=patient, medecin=medecin)
-    # flash('Consultation non trouvée.', 'danger')
-    # return redirect(url_for('dashboard_admin'))
-    return f"Voir consultation {consult_id_str} (à implémenter)"
+@app.route('/admin/consultations/edit/<string:consultation_id>', methods=['GET', 'POST'])
+def edit_consultation(consultation_id):
+    consultation = mongo_service.get_consultation_by_id(consultation_id)
+    
+    if request.method == 'POST':
+        updated_data = {
+            'id_patient': request.form['id_patient'],
+            'id_medecin': request.form['id_medecin'],
+            'date': request.form['date'],
+            'diagnostic': request.form['diagnostic'],
+            'prescriptions': request.form['prescriptions'].split(','),
+            'notes': request.form['notes']
+        }
+        mongo_service.update_consultation(consultation_id, updated_data)
+        return redirect(url_for('manage_consultations'))
+    
+    return render_template('consultation_form.html', consultation=consultation)
 
-@app.route('/edit_consultation/<consult_id_str>', methods=['GET', 'POST'])
-def edit_consultation(consult_id_str):
-    # if request.method == 'POST':
-    #    # ...
-    # else: (GET)
-    #    consult = mongo_service.get_consultation_by_id(consult_id_str)
-    #    # ... charger le formulaire avec les données de consult
-    return f"Modifier consultation {consult_id_str} (à implémenter)"
-
-@app.route('/delete_consultation/<consult_id_str>', methods=['POST']) # Sécuriser avec POST
-def delete_consultation(consult_id_str):
-    # mongo_service.delete_consultation(consult_id_str) # Vous aurez besoin de cette fonction
-    # flash('Consultation supprimée.', 'success')
-    # return redirect(url_for('dashboard_admin'))
-    return f"Supprimer consultation {consult_id_str} (nécessite confirmation et méthode POST, à implémenter)"
+@app.route('/admin/consultations/delete/<string:consultation_id>')
+def delete_consultation(consultation_id):
+    mongo_service.delete_consultation(consultation_id)
+    return redirect(url_for('manage_consultations'))
 
 
 if __name__ == "__main__":

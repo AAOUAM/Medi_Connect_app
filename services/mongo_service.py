@@ -176,86 +176,59 @@ def count_users():
 
 
 def get_recent_consultations_with_details(limit=5):
-    """
-    Récupère les consultations récentes de MongoDB avec les noms de patient/médecin via $lookup.
-    Utilise le champ 'date' (chaîne YYYY-MM-DD) pour le tri.
-    """
-    consultations_coll = db.consultations # Utilise l'objet db global
-    
-    pipeline = [
-        {"$sort": {"date": -1}}, # Tri par date (chaîne) descendante
-        {"$limit": limit},
-        {
-            "$lookup": {
-                "from": "patients",
-                "localField": "id_patient", # Doit être ObjectId dans 'consultations'
-                "foreignField": "_id",     # Doit être ObjectId dans 'patients'
-                "as": "patient_info_array" # Renommé pour éviter conflit avec $unwind si le champ existe déjà
-            }
-        },
-        {
-            "$unwind": {
-                "path": "$patient_info_array",
-                "preserveNullAndEmptyArrays": True
-            }
-        },
-        {
-            "$lookup": {
-                "from": "medecins",
-                "localField": "id_medecin", # Doit être ObjectId dans 'consultations'
-                "foreignField": "_id",     # Doit être ObjectId dans 'medecins'
-                "as": "medecin_info_array"
-            }
-        },
-        {
-            "$unwind": {
-                "path": "$medecin_info_array",
-                "preserveNullAndEmptyArrays": True
-            }
-        },
-        {
-            "$project": {
-                "_id": 1,
-                "nom_patient": {
-                    "$ifNull": [ # Gère le cas où patient_info_array ou ses champs sont null
-                        {"$concat": ["$patient_info_array.prenom", " ", "$patient_info_array.nom"]},
-                        "Patient Inconnu"
-                    ]
-                },
-                "nom_medecin": {
-                    "$ifNull": [
-                        {"$concat": ["Dr. ", "$medecin_info_array.prenom", " ", "$medecin_info_array.nom"]},
-                        "Médecin Inconnu"
-                    ]
-                },
-                "date_consultation_str": "$date", # La date est déjà une chaîne
-                "diagnostic": {"$ifNull": ["$diagnostic", "N/A"]},
-            }
-        }
-    ]
-    
-    formatted_consultations = []
+    consultations_coll = db.consultations
+    patients_coll = db.patients
+    medecins_coll = db.medecins
+
     try:
-        raw_consultations = list(consultations_coll.aggregate(pipeline))
+        # 1. Récupérer les consultations les plus récentes
+        raw_consultations = list(
+            consultations_coll.find()
+            .sort("date", -1)
+            .limit(limit)
+        )
+
+        formatted_consultations = []
+
         for consult in raw_consultations:
-            # Convertir la date YYYY-MM-DD en DD/MM/YYYY pour l'affichage si besoin
-            date_str = consult.get("date_consultation_str", "Date Inconnue")
+            # 2. Récupérer patient
+            patient = patients_coll.find_one({"_id": consult.get("id_patient")})
+            if patient:
+                nom_patient = f"{patient.get('prenom', '')} {patient.get('nom', '')}".strip()
+            else:
+                nom_patient = "Patient Inconnu"
+
+            # 3. Récupérer médecin
+            medecin = medecins_coll.find_one({"_id": consult.get("id_medecin")})
+            if medecin:
+                nom_medecin = f"Dr. {medecin.get('prenom', '')} {medecin.get('nom', '')}".strip()
+            else:
+                nom_medecin = "Médecin Inconnu"
+
+            # 4. Formatage date
+            date_str = consult.get("date", "Date Inconnue")
             try:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d")
                 display_date = date_obj.strftime("%d/%m/%Y")
             except (ValueError, TypeError):
-                display_date = date_str # Garder la chaîne si format incorrect ou None
+                display_date = date_str
 
             formatted_consultations.append({
                 "id": str(consult["_id"]),
-                "nom_patient": consult.get("nom_patient"),
-                "nom_medecin": consult.get("nom_medecin"),
+                "nom_patient": nom_patient,
+                "nom_medecin": nom_medecin,
                 "date": display_date,
-                "diagnostic": consult.get("diagnostic")
+                "diagnostic": consult.get("diagnostic", "N/A"),
+                "prescriptions": consult.get("prescriptions", []),
+                "notes": consult.get("notes", "")
             })
+
+        return formatted_consultations
+
     except Exception as e:
-        print(f"Erreur lors de la récupération des consultations récentes avec détails: {e}")
-    return formatted_consultations
+        print(f"Erreur lors de la récupération des consultations : {e}")
+        return []
+
 
 
 def get_monthly_consultation_stats():
