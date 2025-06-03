@@ -1,0 +1,218 @@
+/* static/css/manage_entity.css */
+
+.manage-entity-container {
+    padding: 0; /* Le container principal de layout.html a déjà du padding */
+}
+
+.page-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: var(--card-bg); /* Utiliser les variables de dashboard.css */
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input[type="text"] {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px 0 0 5px;
+    font-size: 0.95em;
+    min-width: 250px;
+    outline: none;
+}
+.search-bar input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3); /* Ombre au focus */
+}
+
+.search-bar button {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s;
+}
+.search-bar button:hover {
+    background-color: #3a7bc8; /* Plus sombre */
+}
+
+.btn-add-entity {
+    padding: 10px 20px;
+    font-size: 0.95em;
+}
+.btn-add-entity i {
+    margin-right: 8px;
+}
+
+.entity-list-container {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    overflow-x: auto; /* Pour que la table soit scrollable horizontalement si besoin */
+}
+
+.entity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.entity-table th,
+.entity-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.entity-table thead th {
+    background-color: #f0f2f5; /* Fond clair pour l'en-tête */
+    font-weight: 600;
+    color: var(--primary-color); /* Utiliser la couleur primaire */
+    cursor: default;
+}
+.entity-table thead th[data-sortable="true"] {
+    cursor: pointer;
+    position: relative; /* Pour le positionnement de l'icône de tri */
+}
+.entity-table thead th[data-sortable="true"]:hover {
+    background-color: #e9edf0;
+}
+.entity-table thead th .fa-sort,
+.entity-table thead th .fa-sort-up,
+.entity-table thead th .fa-sort-down {
+    margin-left: 8px;
+    color: #aaa;
+    font-size: 0.8em;
+}
+.entity-table thead th.sorted .fa-sort { display: none; }
+.entity-table thead th.sorted-asc .fa-sort-down { display: none; }
+.entity-table thead th.sorted-asc .fa-sort-up { display: inline-block; color: var(--primary-color); }
+.entity-table thead th.sorted-desc .fa-sort-up { display: none; }
+.entity-table thead th.sorted-desc .fa-sort-down { display: inline-block; color: var(--primary-color); }
+
+
+.entity-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.actions-column {
+    width: 150px; /* Ajuster selon le nombre d'actions */
+    text-align: center !important;
+}
+
+.actions-cell {
+    text-align: center;
+    white-space: nowrap; /* Empêcher les boutons de passer à la ligne */
+}
+
+.btn-action {
+    display: inline-block;
+    padding: 6px 10px;
+    margin: 0 4px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.btn-action:hover {
+    opacity: 0.8;
+}
+
+.btn-action.view { background-color: #17a2b8; } /* Info/Cyan */
+.btn-action.edit { background-color: #ffc107; color:#333 } /* Warning/Jaune */
+.btn-action.delete { background-color: #dc3545; } /* Danger/Rouge */
+
+.btn-action i {
+    font-size: 1em; /* Assurer que l'icône n'est pas trop grande */
+}
+
+/* Spécifique pour le bouton supprimer dans un formulaire */
+.delete-form button.btn-action.delete {
+    /* Hérite des styles de .btn-action.delete */
+}
+
+.no-data-card {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #fff;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: #777;
+}
+.no-data-card i {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+.no-data-card p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+
+/* Responsive pour la table */
+@media screen and (max-width: 768px) {
+    .page-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .search-bar {
+        width: 100%;
+    }
+    .search-bar input[type="text"] {
+        min-width: 0;
+        flex-grow: 1;
+    }
+
+    .entity-table thead {
+        display: none; /* Cacher l'en-tête classique */
+    }
+    .entity-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .entity-table td {
+        display: block;
+        text-align: right; /* Aligner le contenu à droite */
+        padding-left: 50%; /* Laisser de la place pour le label */
+        position: relative;
+        border-bottom: 1px dotted #eee; /* Séparateur léger entre les champs */
+    }
+    .entity-table td:last-child {
+        border-bottom: none;
+    }
+    .entity-table td::before {
+        content: attr(data-label); /* Utiliser data-label pour l'étiquette */
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px); /* Ajuster la largeur du label */
+        padding-right: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+    .actions-column, .actions-cell {
+        text-align: center !important; /* Centrer les actions */
+        padding-left: 0; /* Reset pour la cellule d'actions */
+    }
+    .actions-cell::before {
+        display: none; /* Pas de label pour les actions */
+    }
+}
+

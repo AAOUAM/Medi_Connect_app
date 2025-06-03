@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau de bord Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_form.css') }}" />
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
+  </div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+    <li><a href="{{ url_for('manage_patients') }}" class="active"><i class="fas fa-users"></i> Gérer Patients</a></li>
+    <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
+    <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Gérer Consultations</a></li>
+    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
+    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+  </ul>
+</div>
+
+<div class="main-content">
+  <header>
+    <h1><i class="fas fa-tachometer-alt"></i> Gestion des Patients - formulaire</h1>
+    <div class="user-info">
+      <span>Admin User <i class="fas fa-user-circle"></i></span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    {% if error %}
+      <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="nom">Nom *</label>
+        <input type="text" id="nom" name="nom" required value="{{ patient.nom if patient else '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="prenom">Prénom *</label>
+        <input type="text" id="prenom" name="prenom" required value="{{ patient.prenom if patient else '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="age">Âge *</label>
+        <input type="number" id="age" name="age" min="0" required value="{{ patient.age if patient else '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="adresse">Adresse</label>
+        <input type="text" id="adresse" name="adresse" value="{{ patient.adresse if patient else '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input type="text" id="telephone" name="telephone" value="{{ patient.telephone if patient else '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ patient.email if patient else '' }}" />
+      </div>
+
+      <button type="submit" class="btn-submit">
+        {{ 'Modifier' if patient else 'Ajouter' }}
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<!-- <script src="{{ url_for('static', filename='js/main.js') }}"></script> -->
+</body>
+</html>

@@ -1,33 +1,29 @@
-from flask import Flask, render_template, json
+from flask import Flask, render_template, json , flash, redirect, url_for , request
 import services.mongo_service as mongo_service 
+import models.patient as Patient
 
 
 app = Flask(__name__)
 
 
-
 @app.route('/') 
 @app.route('/admin/dashboard')
 def dashboard_admin():
-    try:
-        nb_patients = mongo_service.count_patients()
-        nb_medecins = mongo_service.count_medecins()
-        nb_total_consultations = mongo_service.count_consultations() # Renommé pour clarté
-        nb_utilisateurs = mongo_service.count_users()
+    nb_patients, nb_medecins, nb_total_consultations, nb_utilisateurs = 0, 0, 0, 0
+    recent_consultations = []
+    monthly_stats = {"labels": [], "data": []}
 
-        # Utiliser la fonction de service qui fait déjà les lookups et le formatage
-        recent_consultations = mongo_service.get_recent_consultations_with_details(limit=5)
+    nb_patients = mongo_service.count_patients()
+    nb_medecins = mongo_service.count_medecins()
+    nb_total_consultations = mongo_service.count_consultations() # Renommé pour clarté
+    nb_utilisateurs = mongo_service.count_users()
+
+    # Utiliser la fonction de service qui fait déjà les lookups et le formatage
+    recent_consultations = mongo_service.get_recent_consultations_with_details(limit=5)
         
-        # Récupérer les données pour le graphique d'évolution mensuelle
-        monthly_stats = mongo_service.get_monthly_consultation_stats()
+    # Récupérer les données pour le graphique d'évolution mensuelle
+    monthly_stats = mongo_service.get_monthly_consultation_stats()
 
-    except Exception as e:
-        print(f"Erreur lors de la récupération des données du dashboard: {e}")
-        # Gérer l'erreur, peut-être afficher une page d'erreur ou des données par défaut/vides
-        nb_patients, nb_medecins, nb_total_consultations, nb_utilisateurs = 0, 0, 0, 0
-        recent_consultations = []
-        monthly_stats = {"labels": [], "data": []}
-        # Vous pourriez vouloir flasher un message d'erreur ici aussi
 
     return render_template("dashboard_admin.html",
                            nb_patients=nb_patients,
@@ -43,18 +39,27 @@ def dashboard_admin():
 
 
 
-# --- Routes Placeholder (gardées pour la structure) ---
 
-@app.route('/admin/patients/manage') # J'utilise /manage pour la page de liste
+
+
+# --- Routes  de GESTION ---
+
+@app.route('/admin/patients/manage') 
 def manage_patients():
-    # À implémenter: récupérer tous les patients et les passer à un template
-    # all_patients_list = mongo_service.get_all_patients()
-    # return render_template('manage_patients.html', patients=all_patients_list)
-    return "Page de gestion des patients (à implémenter)"
+    try:
+        all_patients_list = mongo_service.get_all_patients() # Fonction de votre service
+    except Exception as e:
+        print(f"Erreur lors de la récupération des patients: {e}")
+        flash("Erreur lors du chargement de la liste des patients.", "danger")
+        all_patients_list = []
+    return render_template('manage_patients.html', patients=all_patients_list)
+
 
 @app.route('/admin/medecins/manage')
 def manage_medecins():
-    return "Page de gestion des médecins (à implémenter)"
+    all_medecins_list = []
+    all_medecins_list = mongo_service.get_all_medecins() 
+    return render_template('manage_medecins.html', medecins=all_medecins_list)
 
 @app.route('/admin/consultations/manage')
 def manage_consultations():
@@ -71,17 +76,88 @@ def logout():
 
 
 
+
+
+# --- Routes  de PATIENTS ---
+
+@app.route('/add_patient', methods=['GET', 'POST'])
+def add_patient():
+    if request.method == 'POST':
+        form_data = {
+            'nom': request.form.get('nom', '').strip(),
+            'prenom': request.form.get('prenom', '').strip(),
+            'age': int(request.form.get('age', 0)),
+            'adresse': request.form.get('adresse', '').strip(),
+            'telephone': request.form.get('telephone', '').strip(),
+            'email': request.form.get('email', '').strip(),
+        }
+
+        # Validation simple
+        if not form_data['nom'] or not form_data['prenom'] or form_data['age'] <= 0:
+            error = "Veuillez remplir tous les champs obligatoires correctement."
+            return render_template('patient_form.html', patient=form_data, error=error)
+
+        Patient.create_patient(form_data)
+        return redirect(url_for('manage_patients'))
+
+    # GET request : afficher le formulaire vide
+    return render_template('patient_form.html', patient=None)
+
+
+@app.route('/edit_patient/<string:patient_id_str>', methods=['GET', 'POST'])
+def edit_patient(patient_id_str):
+    if request.method == 'POST':
+        updated_data = {
+            'nom': request.form.get('nom', '').strip(),
+            'prenom': request.form.get('prenom', '').strip(),
+            'age': int(request.form.get('age', 0)),
+            'adresse': request.form.get('adresse', '').strip(),
+            'telephone': request.form.get('telephone', '').strip(),
+            'email': request.form.get('email', '').strip(),
+        }
+
+        Patient.modify_patient(patient_id_str, updated_data)
+        return redirect(url_for('manage_patients'))
+
+    patient = Patient.get_patient(patient_id_str)
+    return render_template('patient_form.html', patient=patient)
+
+
+
+# @app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
+# def delete_patient_route(patient_id_str):
+#     Patient.remove_patient(patient_id_str)
+#     return redirect(url_for('/admin/patients/manage'))
+
+
+@app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
+def delete_patient(patient_id_str):
+    mongo_service.delete_patient(patient_id_str)
+    return redirect(url_for('manage_patients'))
+
+
+@app.route('/admin/patients/<patient_id_str>')
+def view_patient(patient_id_str):
+    try:
+        patient = mongo_service.get_patient_by_id(patient_id_str)  # Cette fonction doit être définie dans mongo_service
+        if not patient:
+            flash("Patient non trouvé.", "warning")
+            return redirect(url_for('manage_patients'))
+    except Exception as e:
+        print(f"Erreur lors de la récupération du patient: {e}")
+        flash("Erreur serveur.", "danger")
+        return redirect(url_for('manage_patients'))
+
+    return render_template('view_patient.html', patient=patient)
+
+
+
 # --- Routes pour Actions CRUD (Placeholders) ---
 
-@app.route('/admin/patients/add', methods=['GET', 'POST'])
-def add_patient():
-    # if request.method == 'POST':
-    #     # ... logique d'ajout ...
-    #     # mongo_service.insert_patient(...)
-    #     # flash('Patient ajouté!', 'success')
-    #     # return redirect(url_for('manage_patients'))
-    # return render_template('ajouter_patient.html') # ou patient_form.html
-    return "Page pour ajouter un patient (à implémenter)"
+
+
+
+
 
 @app.route('/admin/medecins/add', methods=['GET', 'POST'])
 def add_medecin():
