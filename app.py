@@ -1,6 +1,9 @@
 from flask import Flask, render_template, json , flash, redirect, url_for , request
 import services.mongo_service as mongo_service 
-import models.patient as Patient
+from models import utilisateur  # à créer si ce n'est pas fait
+
+
+from models import patient
 from models import medecin  
 
 
@@ -79,7 +82,8 @@ def manage_consultations():
 
 @app.route('/admin/users/manage') # J'utilise /manage pour la page de liste
 def manage_users():
-    return "Page de gestion des utilisateurs (à implémenter)"
+    all_users_list = mongo_service.get_all_users()
+    return render_template('manage_users.html', utilisateurs=all_users_list)
 
 @app.route('/logout')
 def logout():
@@ -110,7 +114,7 @@ def add_patient():
             error = "Veuillez remplir tous les champs obligatoires correctement."
             return render_template('patient_form.html', patient=form_data, error=error)
 
-        Patient.create_patient(form_data)
+        patient.create_patient(form_data)
         return redirect(url_for('manage_patients'))
 
     # GET request : afficher le formulaire vide
@@ -130,10 +134,10 @@ def edit_patient(patient_id_str):
             'cin': request.form.get('cin', '').strip(),
         }
 
-        Patient.modify_patient(patient_id_str, updated_data)
+        patient.modify_patient(patient_id_str, updated_data)
         return redirect(url_for('manage_patients'))
 
-    patient = Patient.get_patient(patient_id_str)
+    patient = patient.get_patient(patient_id_str)
     return render_template('patient_form.html', patient=patient)
 
 
@@ -226,28 +230,58 @@ def add_consultation():
     
     return render_template('consultation_form.html', consultation=None)
 
-@app.route('/admin/consultations/edit/<string:consultation_id>', methods=['GET', 'POST'])
-def edit_consultation(consultation_id):
-    consultation = mongo_service.get_consultation_by_id(consultation_id)
-    
+
+
+
+# --- Routes  de PATIENTS ---
+
+@app.route('/admin/users/add', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        form_data = {
+            'nom': request.form.get('nom', '').strip(),
+            'email': request.form.get('email', '').strip(),
+            'role': request.form.get('role', '').strip(),
+            'mot_de_passe': request.form.get('mot_de_passe', '').strip(),
+        }
+
+        # Validation basique
+        if not form_data['nom'] or not form_data['email'] or not form_data['role']:
+            error = "Tous les champs obligatoires doivent être remplis."
+            return render_template('user_form.html', utilisateur=form_data, error=error)
+
+        utilisateur.create_utilisateur(form_data)
+        return redirect(url_for('manage_users'))
+
+    return render_template('user_form.html', utilisateur=None)
+
+
+@app.route('/admin/users/edit/<string:utilisateur_id>', methods=['GET', 'POST'])
+def edit_user(utilisateur_id):
+    user_data = utilisateur.get_utilisateur_by_id(utilisateur_id)
+    if not user_data:
+        return "Utilisateur non trouvé", 404
+
     if request.method == 'POST':
         updated_data = {
-            'id_patient': request.form['id_patient'],
-            'id_medecin': request.form['id_medecin'],
-            'date': request.form['date'],
-            'diagnostic': request.form['diagnostic'],
-            'prescriptions': request.form['prescriptions'].split(','),
-            'notes': request.form['notes']
+            'nom': request.form.get('nom', '').strip(),
+            'email': request.form.get('email', '').strip(),
+            'role': request.form.get('role', '').strip(),
+            'mot_de_passe': request.form.get('mot_de_passe', '').strip(),  # ou gérer conditionnellement
         }
-        mongo_service.update_consultation(consultation_id, updated_data)
-        return redirect(url_for('manage_consultations'))
-    
-    return render_template('consultation_form.html', consultation=consultation)
 
-@app.route('/admin/consultations/delete/<string:consultation_id>')
-def delete_consultation(consultation_id):
-    mongo_service.delete_consultation(consultation_id)
-    return redirect(url_for('manage_consultations'))
+        utilisateur.modify_utilisateur(utilisateur_id, updated_data)
+        return redirect(url_for('manage_users'))
+
+    return render_template('user_form.html', utilisateur=user_data)
+
+
+@app.route('/admin/users/delete/<string:utilisateur_id>', methods=['POST'])
+def delete_user(utilisateur_id):
+    utilisateur.delete_utilisateur_record(utilisateur_id)
+    return redirect(url_for('manage_users'))
+
+
 
 
 if __name__ == "__main__":

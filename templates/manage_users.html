@@ -27,7 +27,7 @@
 
 <div class="main-content">
   <header>
-    <h1><i class="fas fa-users"></i> Gestion des Patients</h1>
+    <h1><i class="fas fa-users"></i> Gestion des utilisateurs</h1>
     <div class="user-info">
       <span>Admin User <i class="fas fa-user-circle"></i></span>
     </div>
@@ -39,53 +39,46 @@
         <input type="text" id="searchPatientInput" placeholder="Rechercher par nom, prénom, ID...">
         <button type="button" id="searchPatientButton" aria-label="Rechercher"><i class="fas fa-search"></i></button>
       </div>
-      <a href="{{ url_for('add_patient') }}" class="btn btn-primary btn-add-entity">
-        <i class="fas fa-user-plus"></i> Ajouter un Patient
+      <a href="{{ url_for('add_user') }}" class="btn btn-primary btn-add-entity">
+        <i class="fas fa-user-plus"></i> Ajouter un utilisateur
       </a>
     </div>
 
     <div class="entity-list-container">
-      {% if patients %}
+      {% if utilisateurs %}
       <table class="entity-table" id="patientsTable">
         <thead>
           <tr>
-            <th>CNI</th>
+            <th>ID</th>
             <th>Nom</th>
-            <th>Prénom</th>
-            <th>Age</th>
-            <th>Adresse</th>
-            <th>Téléphone</th>
             <th>Email</th>
+            <th>Rôle</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {% for patient in patients %}
-          <tr data-patient-id="{{ patient._id|string }}">
-            <td>{{ patient.cin }}</td>
-            <td>{{ patient.nom or 'N/A' }}</td>
-            <td>{{ patient.prenom or 'N/A' }}</td>
-            <td>{{ patient.age or 'N/A' }}</td>
-            <td>{{ patient.adresse or 'N/A' }}</td>
-            <td>{{ patient.telephone or 'N/A' }}</td>
-            <td>{{ patient.email or 'N/A' }}</td>
-            <td class="actions-cell">
-              <a href="{{ url_for('edit_patient', patient_id_str=patient._id) }}" class="btn-action edit" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <form action="{{ url_for('delete_patient', patient_id_str=patient._id) }}" method="post" style="display:inline;">
-                  <button type="submit" class="btn-action delete" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
+            {% for utilisateur in utilisateurs %}
+            <tr data-utilisateur-id="{{ utilisateur._id|string }}">
+                <td>{{ utilisateur._id|string }}</td>
+                <td>{{ utilisateur.nom or 'N/A' }}</td>
+                <td>{{ utilisateur.email or 'N/A' }}</td>
+                <td>{{ utilisateur.role or 'N/A' }}</td>
+                <td class="actions-cell">
+                <a href="{{ url_for('edit_user', utilisateur_id=utilisateur._id) }}" class="btn-action edit" title="Modifier">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <form action="{{ url_for('delete_user', utilisateur_id=utilisateur._id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-action delete" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                </form>
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
       </table>
       {% else %}
       <div class="no-data-card">
         <i class="fas fa-user-slash fa-3x"></i>
-        <p>Aucun patient n'a été trouvé dans la base de données.</p>
-        <button href="{{ url_for('add_patient') }}" class="btn btn-primary">Commencer par ajouter un patient</button>
+        <p>Aucun Utilisateur n'a été trouvé dans la base de données.</p>
       </div>
       {% endif %}
     </div>

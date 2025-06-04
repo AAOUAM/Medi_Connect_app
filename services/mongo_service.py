@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta 
 from config import MONGO_URI, MONGO_DB
 
@@ -7,50 +8,25 @@ from config import MONGO_URI, MONGO_DB
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
 
-# Vérification de la connexion (optionnelle mais recommandée à l'initialisation)
-try:
-    client.admin.command('ping')
-    print(f"Connecté avec succès à MongoDB: {MONGO_DB} sur {MONGO_URI}")
-except Exception as e:
-    print(f"Erreur de connexion à MongoDB: {e}")
-
-
 
 
 # === PATIENTS ( CRUD ) ===
 
-def insert_patient(patient_data):
-    """Créer un patient"""
-    return db.patients.insert_one(patient_data)
-
 def get_all_patients():
-    """Lire tous les patients"""
     return list(db.patients.find())
 
 def get_patient_by_id(patient_id_str): 
-    """Lire un patient par ID (chaîne)"""
-    try:
-        return db.patients.find_one({"_id": ObjectId(patient_id_str)})
-    except Exception as e: # Gérer les erreurs de conversion d'ObjectId
-        print(f"Erreur ObjectId pour patient_id {patient_id_str}: {e}")
-        return None
+    return db.patients.find_one({"_id": ObjectId(patient_id_str)})
+
+def insert_patient(patient_data):
+    return db.patients.insert_one(patient_data)
 
 def update_patient(patient_id_str, updated_data): 
-    """Mettre à jour un patient"""
-    try:
-        return db.patients.update_one({"_id": ObjectId(patient_id_str)}, {"$set": updated_data})
-    except Exception as e:
-        print(f"Erreur ObjectId pour patient_id {patient_id_str} lors de la mise à jour: {e}")
-        return None
-
+    return db.patients.update_one({"_id": ObjectId(patient_id_str)}, {"$set": updated_data})
 
 def delete_patient(patient_id_str): 
-    """Supprimer un patient"""
-    try:
-        return db.patients.delete_one({"_id": ObjectId(patient_id_str)})
-    except Exception as e:
-        print(f"Erreur ObjectId pour patient_id {patient_id_str} lors de la suppression: {e}")
-        return None
+    return db.patients.delete_one({"_id": ObjectId(patient_id_str)})
+
 
 
 
@@ -58,37 +34,23 @@ def delete_patient(patient_id_str):
 
 # === MEDECINS ( CRUD ) ===
 
-def insert_medecin(medecin_data):
-    """Créer un médecin"""
-    return db.medecins.insert_one(medecin_data)
+def get_medecin_by_id(medecin_id_str): 
+    return db.medecins.find_one({"_id": ObjectId(medecin_id_str)})
 
 def get_all_medecins():
-    """Lire tous les médecins"""
     return list(db.medecins.find())
 
-def get_medecin_by_id(medecin_id_str): # Renommé
-    """Lire un médecin par ID (chaîne)"""
-    try:
-        return db.medecins.find_one({"_id": ObjectId(medecin_id_str)})
-    except Exception as e:
-        print(f"Erreur ObjectId pour medecin_id {medecin_id_str}: {e}")
-        return None
+def insert_medecin(medecin_data):
+    return db.medecins.insert_one(medecin_data)
 
-def update_medecin(medecin_id_str, updated_data): # Renommé
-    """Mettre à jour un médecin"""
-    try:
-        return db.medecins.update_one({"_id": ObjectId(medecin_id_str)}, {"$set": updated_data})
-    except Exception as e:
-        print(f"Erreur ObjectId pour medecin_id {medecin_id_str} lors de la mise à jour: {e}")
-        return None
 
-def delete_medecin(medecin_id_str): # Renommé
-    """Supprimer un médecin"""
-    try:
-        return db.medecins.delete_one({"_id": ObjectId(medecin_id_str)})
-    except Exception as e:
-        print(f"Erreur ObjectId pour medecin_id {medecin_id_str} lors de la suppression: {e}")
-        return None
+def update_medecin(medecin_id_str, updated_data): 
+    return db.medecins.update_one({"_id": ObjectId(medecin_id_str)}, {"$set": updated_data})
+    
+
+def delete_medecin(medecin_id_str):
+    return db.medecins.delete_one({"_id": ObjectId(medecin_id_str)})
+    
 
 
 
@@ -96,6 +58,14 @@ def delete_medecin(medecin_id_str): # Renommé
 
 
 # === CONSULTATIONS ===
+
+def get_consultation_by_id(consultation_id_str):
+    return db.consultations.find_one({"_id": ObjectId(consultation_id_str)})
+
+
+def get_all_consultations():
+    return list(db.consultations.find())
+
 
 
 def insert_consultation(consultation_data):
@@ -112,66 +82,57 @@ def insert_consultation(consultation_data):
     return db.consultations.insert_one(consultation_data)
 
 
-def get_consultation_by_id(consultation_id_str):
-    """Lire une consultation par ID (chaîne)"""
-    try:
-        return db.consultations.find_one({"_id": ObjectId(consultation_id_str)})
-    except Exception as e:
-        print(f"Erreur ObjectId pour consultation_id {consultation_id_str}: {e}")
-        return None
-
-
-def get_all_consultations():
-    """Lire toutes les consultations (simple find)"""
-    return list(db.consultations.find())
-
 
 
 
 # # === UTILISATEURS ===
 
-# def insert_user(user_data):
-#     """Créer un utilisateur"""
-#     # Pensez à hasher le mot de passe ici avant insertion !
-#     # from werkzeug.security import generate_password_hash
-#     # if 'password' in user_data:
-#     #     user_data['password'] = generate_password_hash(user_data['password'])
-#     return db.utilisateurs.insert_one(user_data)
+def insert_utilisateur(user_data):
+    """Créer un utilisateur"""
+    if 'password' in user_data:
+        user_data['password'] = generate_password_hash(user_data['password'])
+    return db.utilisateurs.insert_one(user_data)
 
-# def get_user_by_username(username):
-#     """Trouver un utilisateur par son nom d'utilisateur"""
-#     return db.utilisateurs.find_one({"username": username}) # Ou "email" selon votre modèle
+def get_utilisateur_by_email(email):
+    return db.utilisateurs.find_one({"email": email}) 
 
-# def get_user_by_id(user_id_str):
-#     """Trouver un utilisateur par son ID (chaîne)"""
-#     try:
-#         return db.utilisateurs.find_one({"_id": ObjectId(user_id_str)})
-#     except Exception as e:
-#         print(f"Erreur ObjectId pour user_id {user_id_str}: {e}")
-#         return None
+def get_utilisateur_by_id(user_id_str):
+    return db.utilisateurs.find_one({"_id": ObjectId(user_id_str)})
 
-# def get_all_users():
-#     """Lire tous les utilisateurs"""
-#     return list(db.utilisateurs.find())
+def get_all_users():
+    return list(db.utilisateurs.find())
+
+def delete_utilisateur(user_id_str):
+    result = db.utilisateurs.delete_one({"_id": ObjectId(user_id_str)})
+    return result.deleted_count  # Retourne 1 si suppression réussie, 0 sinon
+
+def update_utilisateur(user_id_str, update_data):
+    """
+    Met à jour un utilisateur par son _id.
+    Si 'password' est présent dans update_data, on le hash avant.
+    """
+    if 'password' in update_data:
+        update_data['password'] = generate_password_hash(update_data['password'])
+    result = db.utilisateurs.update_one(
+        {"_id": ObjectId(user_id_str)},
+        {"$set": update_data}
+    )
+    return result.modified_count  # Retourne 1 si mise à jour réussie, 0 sinon
 
 
 
 # === FONCTIONS SPÉCIFIQUES AU TABLEAU DE BORD (Intégration) ===
 
 def count_patients():
-    """Compte le nombre total de patients."""
     return db.patients.count_documents({})
 
 def count_medecins():
-    """Compte le nombre total de médecins."""
     return db.medecins.count_documents({})
 
 def count_consultations():
-    """Compte le nombre total de consultations."""
     return db.consultations.count_documents({})
 
 def count_users():
-    """Compte le nombre total d'utilisateurs."""
     return db.utilisateurs.count_documents({})
 
 
