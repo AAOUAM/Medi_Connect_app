@@ -1,6 +1,7 @@
 from flask import Flask, render_template, json , flash, redirect, url_for , request
 import services.mongo_service as mongo_service 
-from models import utilisateur  # à créer si ce n'est pas fait
+from models import utilisateur 
+from services.synch_service import sync_all
 
 
 from models import patient
@@ -61,7 +62,6 @@ def manage_patients():
 
 @app.route('/admin/medecins/manage')
 def manage_medecins():
-    all_medecins_list = []
     all_medecins_list = mongo_service.get_all_medecins() 
     return render_template('manage_medecins.html', medecins=all_medecins_list)
 
@@ -115,6 +115,7 @@ def add_patient():
             return render_template('patient_form.html', patient=form_data, error=error)
 
         patient.create_patient(form_data)
+        sync_all()
         return redirect(url_for('manage_patients'))
 
     # GET request : afficher le formulaire vide
@@ -135,6 +136,7 @@ def edit_patient(patient_id_str):
         }
 
         patient.modify_patient(patient_id_str, updated_data)
+        sync_all()
         return redirect(url_for('manage_patients'))
 
     patient = patient.get_patient(patient_id_str)
@@ -151,6 +153,7 @@ def edit_patient(patient_id_str):
 @app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
 def delete_patient(patient_id_str):
     mongo_service.delete_patient(patient_id_str)
+    sync_all()
     return redirect(url_for('manage_patients'))
 
 
@@ -176,6 +179,7 @@ def add_medecin():
             'experiences': request.form['experiences'],
         }
         medecin.create_medecin(form_data)
+        sync_all()
         return redirect(url_for('manage_medecins'))
 
     return render_template('medecin_form.html', medecin=None)
@@ -197,6 +201,7 @@ def edit_medecin(medecin_id):
             'experiences': request.form['experiences'],
         }
         medecin.modify_medecin(medecin_id, updated_data)
+        sync_all()
         return redirect(url_for('manage_medecins'))
 
     return render_template('medecin_form.html', medecin=medecin_data)
@@ -204,6 +209,7 @@ def edit_medecin(medecin_id):
 @app.route('/admin/medecins/delete/<string:medecin_id>', methods=['POST'])
 def delete_medecin(medecin_id):
     medecin.remove_medecin(medecin_id)
+    sync_all()
     return redirect(url_for('manage_medecins'))
 
 
@@ -226,6 +232,7 @@ def add_consultation():
             'notes': request.form['notes']
         }
         mongo_service.insert_consultation(form_data)
+        sync_all()
         return redirect(url_for('manage_consultations'))
     
     return render_template('consultation_form.html', consultation=None)
@@ -251,6 +258,7 @@ def add_user():
             return render_template('user_form.html', utilisateur=form_data, error=error)
 
         utilisateur.create_utilisateur(form_data)
+        sync_all()
         return redirect(url_for('manage_users'))
 
     return render_template('user_form.html', utilisateur=None)
@@ -271,6 +279,7 @@ def edit_user(utilisateur_id):
         }
 
         utilisateur.modify_utilisateur(utilisateur_id, updated_data)
+        sync_all()
         return redirect(url_for('manage_users'))
 
     return render_template('user_form.html', utilisateur=user_data)
@@ -279,10 +288,12 @@ def edit_user(utilisateur_id):
 @app.route('/admin/users/delete/<string:utilisateur_id>', methods=['POST'])
 def delete_user(utilisateur_id):
     utilisateur.delete_utilisateur_record(utilisateur_id)
+    sync_all()
     return redirect(url_for('manage_users'))
 
 
 
 
 if __name__ == "__main__":
+    sync_all()
     app.run(debug=True, port=1000)
