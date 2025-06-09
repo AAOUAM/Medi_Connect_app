@@ -1,17 +1,101 @@
-from flask import Flask, render_template, json , flash, redirect, url_for , request
+from flask import Flask, render_template, json , flash, redirect, url_for , request ,  session, flash, jsonify
 import services.mongo_service as mongo_service 
 from models import utilisateur 
 from services.synch_service import sync_all
-
+from services.auth_service import AuthService, login_required, admin_required, medecin_required, patient_required
+from bson.objectid import ObjectId # Important pour les ID
+from datetime import datetime
 
 from models import patient
 from models import medecin  
 
 
 app = Flask(__name__)
+app.secret_key = ' '
 
 
-@app.route('/') 
+# ==================== ROUTES D'AUTHENTIFICATION ====================
+
+@app.route('/')
+def index():
+    """Page d'accueil - Redirection vers login si non connecté"""
+    if 'user_id' in session:
+        user_role = session.get('user_role')
+        if user_role == 'admin':
+            return redirect(url_for('dashboard_admin'))
+        elif user_role == 'medecin':
+            return redirect(url_for('medecin_dashboard'))
+        elif user_role == 'patient':
+            return redirect(url_for('patient_dashboard'))
+    return redirect(url_for('login'))
+
+# app.py
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Page de connexion"""
+    # Étape 1: Si l'utilisateur est déjà connecté, rediriger immédiatement
+    if 'user_id' in session and 'user_role' in session:
+        user_role = session['user_role']    
+        if user_role == 'admin':
+            return redirect(url_for('dashboard_admin'))
+        elif user_role == 'medecin':
+            # Assurez-vous que le nom de la route est correct
+            return redirect(url_for('medecin_dashboard'))
+        elif user_role == 'patient':
+            return redirect(url_for('patient_dashboard'))
+
+    # Étape 2: Si c'est une soumission de formulaire (POST)
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+
+        if not email or not password:
+            flash('Veuillez remplir tous les champs', 'error')
+            # On reste sur la page de login pour afficher l'erreur
+            return render_template('login.html')
+
+        result = AuthService.authenticate_user(email, password)
+
+        if result['success']:
+            user = result['user']
+            session.permanent = True
+            session['user_id'] = str(user['id']) # Important: Stocker l'ID de l'utilisateur ('utilisateurs')
+            session['user_email'] = user['email']
+            session['user_role'] = user['role']
+            session['user_nom'] = user.get('nom', '')
+            session['id_fonctionnel'] = str(user.get('id_fonctionnel', ''))
+
+            flash(f"Bienvenue {session['user_nom']}!", 'success')
+            
+            # Rediriger après une connexion réussie
+            if user['role'] == 'admin':
+                return redirect(url_for('dashboard_admin'))
+            elif user['role'] == 'medecin':
+                return redirect(url_for('medecin_dashboard'))
+            elif user['role'] == 'patient':
+                return redirect(url_for('patient_dashboard'))
+        else:
+            flash(result['message'], 'error')
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Déconnexion utilisateur"""
+    user_name = session.get('user_prenom', '') or session.get('user_email', 'Utilisateur')
+    session.clear()
+
+    flash(f'Au revoir {user_name}! Vous avez été déconnecté.', 'info')
+    return redirect(url_for('login'))  
+
+
+
+
+
+# ==================== ROUTES D'ADMINISTRATION ====================
+@app.route('/admin/')
 @app.route('/admin/dashboard')
 def dashboard_admin():
     nb_patients, nb_medecins, nb_total_consultations, nb_utilisateurs = 0, 0, 0, 0
@@ -41,9 +125,6 @@ def dashboard_admin():
                            monthly_consultation_labels=json.dumps(monthly_stats.get('labels', [])),
                            monthly_consultation_data=json.dumps(monthly_stats.get('data', []))
                            )
-
-
-
 
 
 
@@ -80,17 +161,10 @@ def manage_consultations():
 
   return render_template('manage_consultations.html', consultations=consultations)
 
-@app.route('/admin/users/manage') # J'utilise /manage pour la page de liste
+@app.route('/admin/users/manage')
 def manage_users():
     all_users_list = mongo_service.get_all_users()
     return render_template('manage_users.html', utilisateurs=all_users_list)
-
-@app.route('/logout')
-def logout():
-    # À implémenter: session.clear(), flash message, redirect to login
-    return "Déconnexion (à implémenter)"
-
-
 
 
 
@@ -143,25 +217,11 @@ def edit_patient(patient_id_str):
     return render_template('patient_form.html', patient=patient)
 
 
-
-# @app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
-# def delete_patient_route(patient_id_str):
-#     Patient.remove_patient(patient_id_str)
-#     return redirect(url_for('/admin/patients/manage'))
-
-
 @app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
 def delete_patient(patient_id_str):
     mongo_service.delete_patient(patient_id_str)
     sync_all()
     return redirect(url_for('manage_patients'))
-
-
-
-
-
-
-
 
 
 # --- Routes pour MEDECINS ---
@@ -215,33 +275,7 @@ def delete_medecin(medecin_id):
 
 
 
-
-
-
-# --- Routes pour CONSUTLTATIONS ---
-
-@app.route('/admin/consultations/add', methods=['GET', 'POST'])
-def add_consultation():
-    if request.method == 'POST':
-        form_data = {
-            'id_patient': request.form['id_patient'],
-            'id_medecin': request.form['id_medecin'],
-            'date': request.form['date'],
-            'diagnostic': request.form['diagnostic'],
-            'prescriptions': request.form['prescriptions'].split(','),  # comma-separated
-            'notes': request.form['notes']
-        }
-        mongo_service.insert_consultation(form_data)
-        sync_all()
-        return redirect(url_for('manage_consultations'))
-    
-    return render_template('consultation_form.html', consultation=None)
-
-
-
-
-# --- Routes  de PATIENTS ---
-
+# --- Routes  de UTILISATEURS ---
 @app.route('/admin/users/add', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
@@ -249,7 +283,7 @@ def add_user():
             'nom': request.form.get('nom', '').strip(),
             'email': request.form.get('email', '').strip(),
             'role': request.form.get('role', '').strip(),
-            'mot_de_passe': request.form.get('mot_de_passe', '').strip(),
+            'password': request.form.get('password', '').strip(),
         }
 
         # Validation basique
@@ -257,7 +291,7 @@ def add_user():
             error = "Tous les champs obligatoires doivent être remplis."
             return render_template('user_form.html', utilisateur=form_data, error=error)
 
-        utilisateur.create_utilisateur(form_data)
+        AuthService.create_user(form_data["email"] , form_data["password"] , form_data["role"] , form_data["nom"])
         sync_all()
         return redirect(url_for('manage_users'))
 
@@ -290,6 +324,145 @@ def delete_user(utilisateur_id):
     utilisateur.delete_utilisateur_record(utilisateur_id)
     sync_all()
     return redirect(url_for('manage_users'))
+
+
+
+
+
+# ==================== ROUTES DE MEDECIN ====================
+@app.route("/medecin/dashboard")
+def medecin_dashboard():
+  user_id = session.get('user_id')
+
+  utilisateur = mongo_service.get_utilisateur_by_id(user_id)
+
+  user_id_fonctionnel = utilisateur.get('id_fonctionnel')
+
+  if not user_id_fonctionnel:
+    flash("Votre compte n'est pas associé à un profil médecin valide.", "error")
+    return redirect(url_for('logout')) # On déconnecte pour être sûr
+
+  # Étape 3 : récupérer les infos médecin
+  medecin_info = mongo_service.get_medecin_by_id(user_id_fonctionnel)
+  # Étape 4 : charger les consultations
+  consultations_fictives = mongo_service.get_consultations_by_medecin(user_id_fonctionnel)
+
+  return render_template(
+    'medecin_dashboard.html',
+    medecin=medecin_info,
+    consultations=consultations_fictives
+  )
+
+
+@app.route('/medecin/consultation/add', methods=['GET', 'POST'])
+def add_consultation():
+    if request.method == 'GET':
+        return render_template('consultation_form.html', consultation=None)
+
+    if request.method == 'POST':
+
+        if session.get('id_fonctionnel'):
+            medecin_id_fonctionnel = ObjectId(session['id_fonctionnel'])
+        else:
+            # Gérer l'erreur proprement
+            flash("Identifiant fonctionnel du médecin introuvable.", 'error')
+            return redirect(url_for('login'))
+
+        patient_full_name = request.form.get('patient_full_name', '').strip()
+
+        patient = mongo_service.get_patient_by_nom(patient_full_name)
+
+        # 3. GESTION D'ERREUR CRITIQUE : que faire si le patient n'est pas trouvé ?
+        if not patient:
+            flash(f"Patient '{patient_full_name}' non trouvé. Veuillez vérifier l'orthographe ou créer le patient.", "error")
+            # On renvoie le formulaire avec les données déjà saisies pour ne pas tout perdre
+            return render_template('consultation_form.html', consultation=request.form, error=True)
+
+        # Si le patient est trouvé, on récupère son ID
+        patient_id = patient['_id']
+
+        # 4. Récupérer les autres données du formulaire
+        date_str = request.form.get('date')
+        diagnostic = request.form.get('diagnostic', '').strip()
+        notes = request.form.get('notes', '').strip()
+        prescriptions_list = request.form.getlist('prescriptions[]')
+        prescriptions = [p.strip() for p in prescriptions_list if p.strip()]
+
+        consultation_data = {
+            'id_patient': ObjectId(patient_id),
+            'id_medecin': medecin_id_fonctionnel,
+            'date': datetime.fromisoformat(date_str),  # Conserver datetime
+            'diagnostic': diagnostic,
+            'prescriptions': prescriptions,
+            'notes': notes
+        }
+
+        try:   
+            mongo_service.insert_consultation(consultation_data)
+            sync_all()
+            flash("Consultation enregistrée avec succès !", "success")
+            return redirect(url_for('medecin_dashboard'))
+        except Exception as e:
+            flash(f"Une erreur est survenue lors de l'enregistrement : {e}", "danger")
+            return render_template('consultation_form.html', consultation=request.form)
+
+    return render_template('consultation_form.html', consultation=None)
+
+
+
+@app.route('/medecin/consultations/edit/<string:consultation_id>', methods=['GET', 'POST'])
+def edit_consultation(consultation_id):
+    consultation = mongo_service.get_consultation_by_id(consultation_id)
+    if not consultation:
+        flash("Consultation introuvable.", "danger")
+        return redirect(url_for('medecin_dashboard'))
+
+    # Récupération du patient lié à la consultation pour affichage du nom
+    patient = mongo_service.get_patient_by_id(consultation['id_patient'])
+    patient_name = patient['nom'] if patient else "Patient inconnu"
+
+    if request.method == 'GET':
+        return render_template('consultation_form.html', consultation=consultation, patient_name=patient_name)
+
+    if request.method == 'POST':
+        date_str = request.form.get('date', '').strip()
+        diagnostic = request.form.get('diagnostic', '').strip()
+        prescriptions_list = request.form.getlist('prescriptions[]')
+        prescriptions = [p.strip() for p in prescriptions_list if p.strip()]
+        notes = request.form.get('notes', '').strip()
+
+        if not date_str or not diagnostic:
+            flash("Veuillez remplir les champs Date et Diagnostic.", "error")
+            return render_template('consultation_form.html', consultation=consultation, patient_name=patient_name, error=True)
+
+        updated_data = {
+            'date': date_str,
+            'diagnostic': diagnostic,
+            'prescriptions': prescriptions,
+            'notes': notes
+        }
+
+        try:
+            mongo_service.update_consultation(consultation_id, updated_data)
+            flash("La consultation a été mise à jour avec succès.", "success")
+            return redirect(url_for('medecin_dashboard'))
+        except Exception as e:
+            flash(f"Erreur lors de la mise à jour : {e}", "danger")
+            return render_template('consultation_form.html', consultation=consultation, patient_name=patient_name)
+
+    return redirect(url_for('medecin_dashboard'))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

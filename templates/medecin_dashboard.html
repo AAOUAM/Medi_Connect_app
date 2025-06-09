@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Médecin - {{ medecin.nom_complet }}</title>
+    <!-- Lien vers une bibliothèque d'icônes (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lien vers le CSS spécifique pour cette page -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_medecin.css') }}">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <span><strong>Bienvenue, Dr. {{ medecin.nom }}</strong></span>
+        </div>
+        <nav class="user-nav">
+            <a href="/logout" class="btn btn-logout">Déconnexion</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <h2>Tableau de Bord - Espace Médecin</h2>
+            <a href="/medecin/consultation/add" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Ajouter une Consultation
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Dernières Consultations</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Diagnostic (Résumé)</th>
+                                <th>prescriptions</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Boucle Jinja2 pour afficher chaque consultation -->
+                            {% for consultation in consultations %}
+                            <tr>
+                                <td data-label="Patient">{{ consultation.nom_patient }}</td>
+                                <td data-label="Date">{{ consultation.date}}</td>
+                                <td data-label="Diagnostic">{{ consultation.diagnostic | truncate(50) }}</td>
+                                <td data-label="Motif">{{ consultation.prescriptions }}</td>
+                                <td data-label="Motif">{{ consultation.notes }}</td>
+                                <td data-label="Actions" class="actions-cell">
+                                    <a href="/medecin/consultations/edit/{{ consultation.id }}" class="btn btn-edit" title="Modifier">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <!-- Message si aucune consultation n'est trouvée -->
+                            <tr>
+                                <td colspan="5" class="empty-message">Aucune consultation à afficher pour le moment.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lien vers le fichier JavaScript pour l'interactivité -->
+    <script src="{{ url_for('static', filename='js/dashboard_medecin.js') }}"></script>
+</body>
+</html>

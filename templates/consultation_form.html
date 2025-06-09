@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Modifier la Consultation' if consultation else 'Nouvelle Consultation' }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lien vers votre CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consultation_form.css') }}">
+</head>
+<body>
+
+    <div class="form-container">
+        <form action="{{ url_for('edit_consultation', consultation_id=consultation._id) if consultation else url_for('add_consultation') }}" method="post" class="form-card">
+            
+            <div class="form-header">
+                <h2>{{ 'Modifier la Consultation' if consultation else 'Ajouter une Nouvelle Consultation' }}</h2>
+                <p>Remplissez les détails ci-dessous.</p>
+            </div>
+
+            <!-- Section de sélection du Patient (SIMPLIFIÉE) -->
+            <div class="form-group">
+                <label for="patient_search"><i class="fas fa-user-injured"></i> Nom Complet du Patient</label>
+                <!-- Le médecin tape le nom complet ici. Le name est 'patient_full_name' -->
+                <input type="text" id="patient_full_name" name="patient_full_name" 
+                       placeholder="Ex: Alice Martin" 
+                       class="form-control"
+                       required
+                       {% if consultation %}
+                           value="{{  patient_name }}" disabled
+                       {% else %}
+                           value="{{ request.form.patient_full_name if request.form else '' }}"
+                       {% endif %}>
+                <!-- En mode édition, on affiche le nom et on désactive le champ -->
+            </div>
+
+
+            <!-- Date de la consultation -->
+            <div class="form-group">
+                <label for="date"><i class="fas fa-calendar-alt"></i> Date et Heure</label>
+                <input type="date" id="date" name="date" class="form-control" 
+                       value="{{ consultation.date if consultation and consultation.date else '' }}" required>
+            </div>
+
+            <!-- Diagnostic -->
+            <div class="form-group">
+                <label for="diagnostic"><i class="fas fa-stethoscope"></i> Diagnostic</label>
+                <textarea id="diagnostic" name="diagnostic" rows="5" class="form-control">{{ consultation.diagnostic if consultation else '' }}</textarea>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+                <label for="notes"><i class="fas fa-sticky-note"></i> Notes</label>
+                <textarea id="notes" name="notes" rows="4" class="form-control">{{ consultation.notes if consultation else '' }}</textarea>
+            </div>
+            
+            <!-- Prescriptions (la logique JS pour ajouter/supprimer peut rester) -->
+            <div class="form-group">
+                <label for="prescriptions"><i class="fas fa-pills"></i> Prescriptions</label>
+                <div id="prescription-container">
+                    {% if consultation and consultation.prescriptions %}
+                        {% for prescription in consultation.prescriptions %}
+                        <div class="prescription-item">
+                            <input type="text" name="prescriptions[]" class="form-control" value="{{ prescription }}">
+                            <button type="button" class="btn btn-danger-outline" onclick="removePrescription(this)"><i class="fas fa-times"></i></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-secondary-outline" onclick="addPrescription()"><i class="fas fa-plus"></i> Ajouter</button>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('medecin_dashboard') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>  
+
+    <!-- Script pour la gestion dynamique des prescriptions (on peut le garder) -->
+    <script>
+        function addPrescription() {
+            const container = document.getElementById('prescription-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'prescription-item';
+            newItem.innerHTML = `
+                <input type="text" name="prescriptions[]" class="form-control" placeholder="Nom du médicament, posologie...">
+                <button type="button" class="btn btn-danger-outline" onclick="removePrescription(this)"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(newItem);
+        }
+
+        function removePrescription(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</body>
+</html>

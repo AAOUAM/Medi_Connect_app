@@ -1,0 +1,205 @@
+/* static/css/consultation_form.css */
+
+/* --- Variables de Design --- */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --background-color: #f4f7f6;
+    --card-bg-color: #ffffff;
+    --border-color: #dee2e6;
+    --font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Base --- */
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--dark-color);
+    margin: 0;
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Aligner en haut pour les formulaires longs */
+    min-height: 100vh;
+}
+
+/* --- Conteneur et Carte du Formulaire --- */
+.form-container {
+    width: 100%;
+    max-width: 800px;
+}
+
+.form-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2rem 2.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+}
+
+.form-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.form-header p {
+    margin: 0;
+    color: var(--secondary-color);
+    font-size: 1rem;
+}
+
+/* --- Groupes de Formulaire et Labels --- */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-group label i {
+    margin-right: 8px;
+    color: var(--secondary-color);
+    width: 20px; /* Aligner les icônes */
+    text-align: center;
+}
+
+/* --- Champs de Saisie (Inputs, Textareas) --- */
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; /* Important pour que le padding n'affecte pas la largeur */
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.form-control:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* --- Boutons --- */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+/* --- Styles spécifiques pour les prescriptions --- */
+#prescription-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.prescription-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.prescription-item input {
+    flex-grow: 1; /* Le champ prend tout l'espace disponible */
+}
+
+.btn-secondary-outline, .btn-danger-outline {
+    background: transparent;
+    border: 1px solid;
+    padding: 0.5rem 1rem;
+}
+.btn-secondary-outline {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+.btn-secondary-outline:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+.btn-danger-outline {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+    padding: 0.5rem;
+    line-height: 1;
+}
+.btn-danger-outline:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem 0;
+    }
+    .form-card {
+        padding: 1.5rem;
+    }
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+    .form-actions {
+        flex-direction: column-reverse; /* Les boutons s'empilent */
+    }
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

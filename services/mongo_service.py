@@ -18,6 +18,10 @@ def get_all_patients():
 def get_patient_by_id(patient_id_str): 
     return db.patients.find_one({"_id": ObjectId(patient_id_str)})
 
+
+def get_patient_by_nom(patient_nom): 
+    return db.patients.find_one({"nom": patient_nom})
+
 def insert_patient(patient_data):
     return db.patients.insert_one(patient_data)
 
@@ -36,6 +40,9 @@ def delete_patient(patient_id_str):
 
 def get_medecin_by_id(medecin_id_str): 
     return db.medecins.find_one({"_id": ObjectId(medecin_id_str)})
+
+def get_medecin_by_nom(medecin_nom): 
+    return db.medecins.find_one({"nom": medecin_nom})
 
 def get_all_medecins():
     return list(db.medecins.find())
@@ -69,19 +76,44 @@ def get_all_consultations():
 
 
 def insert_consultation(consultation_data):
-    """Créer une consultation"""
-    # Assurez-vous que id_patient et id_medecin sont des ObjectId si stockés ainsi
-    if 'id_patient' in consultation_data and isinstance(consultation_data['id_patient'], str):
-        try:
-            consultation_data['id_patient'] = ObjectId(consultation_data['id_patient'])
-        except: pass # Laisser tel quel si ce n'est pas un format ObjectId valide
-    if 'id_medecin' in consultation_data and isinstance(consultation_data['id_medecin'], str):
-        try:
-            consultation_data['id_medecin'] = ObjectId(consultation_data['id_medecin'])
-        except: pass
     return db.consultations.insert_one(consultation_data)
 
+def get_consultations_by_medecin(medecin_id_str):
 
+    medecin_id = ObjectId(medecin_id_str)
+    consultations = list(db.consultations.find({"id_medecin": medecin_id}).sort("date", -1))
+
+    patients_coll = db.patients
+    formatted_consultations = []
+
+    for consult in consultations:
+        patient = patients_coll.find_one({"_id": consult.get("id_patient")})
+        nom_patient = "Patient Inconnu"
+        if patient:
+            nom_patient = f"{patient.get('prenom', '')} {patient.get('nom', '')}".strip()
+
+        date_str = consult.get("date", "Date Inconnue")
+
+        formatted_consultations.append({
+            "id": str(consult["_id"]),
+            "nom_patient": nom_patient,
+            "date": date_str,
+            "diagnostic": consult.get("diagnostic", "N/A"),
+            "prescriptions": consult.get("prescriptions", []),
+            "notes": consult.get("notes", "")
+        })
+
+    return formatted_consultations
+
+
+def update_consultation(consultation_id_str, updated_data):
+    obj_id = ObjectId(consultation_id_str)
+
+    result = db.consultations.update_one(
+        {'_id': obj_id},
+        {'$set': updated_data}
+    )
+    return result
 
 
 

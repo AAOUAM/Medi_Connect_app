@@ -42,9 +42,3 @@ def modify_utilisateur(utilisateur_id, updated_data):
 
 def delete_utilisateur_record(utilisateur_id):
     delete_utilisateur(utilisateur_id)
-
-def desactiver_utilisateur(utilisateur_id):
-    update_utilisateur(utilisateur_id, {"actif": False})
-
-def activer_utilisateur(utilisateur_id):
-    update_utilisateur(utilisateur_id, {"actif": True})
