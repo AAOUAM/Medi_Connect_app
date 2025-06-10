@@ -481,13 +481,6 @@ def patient_dashboard():
 
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
     sync_all()
     app.run(debug=True, port=1000)
