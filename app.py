@@ -451,6 +451,38 @@ def edit_consultation(consultation_id):
 
 
 
+#===============================ROUTE DE PATIENT=======================================
+@app.route('/patient/dashboard')
+def patient_dashboard():
+    if 'user_id' not in session or session.get('user_role') != 'patient':
+        return redirect(url_for('login'))
+
+    patient_id = session['user_id']
+    medecin_filter = request.args.get('medecin', '').strip().lower()
+    date_filter = request.args.get('date', '').strip()
+
+    # Récupérer toutes les consultations du patient
+    consultations = mongo_service.get_consultations_by_patient_id(patient_id)
+
+    # Filtrage
+    if medecin_filter:
+        consultations = [c for c in consultations if medecin_filter in c.get('medecin', '').lower()]
+
+    if date_filter:
+        consultations = [c for c in consultations if c.get('date', '') == date_filter]
+
+    # Préparer les données pour le template
+    formatted_consultations = []
+    for c in consultations:
+        formatted_consultations.append({
+            'medecin': c.get('medecin', 'Inconnu'),
+            'date': c.get('date', 'Non spécifiée'),
+            'motif': c.get('motif', ''),
+            'notes': c.get('notes', ''),
+        })
+
+    return render_template('patient_dashboard.html', consultations=formatted_consultations)
+
 
 
 
