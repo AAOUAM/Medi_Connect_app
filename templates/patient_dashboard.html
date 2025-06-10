@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Tableau de bord patient</title>
+    <!-- On ne garde que la feuille de style principale, qui importe déjà l'autre -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_dashboard.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Important pour le responsive -->
 </head>
 <body>
 
 <div class="container">
+
+    <!-- L'en-tête a maintenant des styles dédiés dans le CSS -->
+    <header class="main-header">
+        <div class="logo">
+            <span>Bienvenue, <strong>{{ patient.nom }} {{ patient.prenom }}</strong></span>
+        </div>
+        <nav class="user-nav">
+            <a href="/logout" class="btn-logout">Déconnexion</a>
+        </nav>
+    </header>
+
     <h2>Mon historique médical</h2>
 
-    <!-- Filtres -->
+    <!-- Filtres (inchangés, la structure était déjà bonne) -->
     <form method="get" class="filters">
         <div class="form-group">
             <label for="medecin">Filtrer par médecin</label>
@@ -26,31 +39,45 @@
         </div>
     </form>
 
-    <!-- Résultats -->
-    {% if consultations %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Médecin</th>
-                    <th>Date</th>
-                    <th>Motif</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in consultations %}
-                <tr>
-                    <td>{{ c.medecin }}</td>
-                    <td>{{ c.date }}</td>
-                    <td>{{ c.motif }}</td>
-                    <td>{{ c.notes }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="alert">Aucune consultation trouvée.</div>
-    {% endif %}
+    <!--
+      CORRECTION MAJEURE ICI :
+      On enveloppe le tableau dans les div .card, .card-body et .table-responsive
+      pour appliquer les styles que vous aviez déjà préparés dans le CSS.
+      Le message d'alerte est aussi mis dans la carte pour la cohérence.
+    -->
+    <div class="card">
+        <div class="card-body">
+            {% if consultations %}
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Médecin</th>
+                                <th>Date</th>
+                                <th>Diagnostic</th>
+                                <th>Prescriptions</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in consultations %}
+                            <tr>
+                                <td>{{ c.nom_medecin }}</td>
+                                <td>{{ c.date }}</td>
+                                <td>{{ c.diagnostic }}</td>
+                                <td>{{ c.prescriptions }}</td>
+                                <td>{{ c.notes }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert">Aucune consultation trouvée.</div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 
 </body>

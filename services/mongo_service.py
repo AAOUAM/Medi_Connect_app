@@ -107,19 +107,17 @@ def get_consultations_by_medecin(medecin_id_str):
 
 
 def get_consultations_by_patient_id(patient_id_str):
-    from bson.objectid import ObjectId
 
     patient_id = ObjectId(patient_id_str)
     consultations = list(db.consultations.find({"id_patient": patient_id}).sort("date", -1))
 
-    medecins_coll = db.medecins
     formatted_consultations = []
 
     for consult in consultations:
-        medecin = medecins_coll.find_one({"_id": consult.get("id_medecin")})
+        medecin = get_medecin_by_id(consult.get("id_medecin"))
         nom_medecin = "Médecin Inconnu"
         if medecin:
-            nom_medecin = f"{medecin.get('prenom', '')} {medecin.get('nom', '')}".strip()
+            nom_medecin = f"{medecin.get('nom', '')}".strip()
 
         formatted_consultations.append({
             "id": str(consult["_id"]),

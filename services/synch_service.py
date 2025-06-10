@@ -87,45 +87,7 @@ def sync_consultations_from_mongo():
 
     print("✅ Consultations synchronisées vers Neo4j.")
 
-# === UTILISATEURS ===
 
-def sync_utilisateurs():
-    utilisateurs = get_all_users()
-    with driver.session() as session:
-        for user in utilisateurs:
-            utilisateur_data = {
-                "id": str(user["_id"]),
-                "id_fonctionnel": str(user.get("id_fonctionnel", "")),
-                "email": user.get("email", ""),
-                "mot_de_passe": user.get("mot_de_passe", ""),
-                "role": user.get("role", ""),
-                "date_creation": str(user.get("date_creation", "")),
-                "nom": user.get("nom", "")
-            }
-
-            # Supprimer ancien noeud + relation
-            delete_utilisateur_node(utilisateur_data["id"])
-            create_utilisateur_node(utilisateur_data)
-
-            # Créer relation vers Patient ou Médecin
-            relation_query = ""
-            if utilisateur_data["role"] == "patient":
-                relation_query = """
-                MATCH (u:Utilisateur {id: $id})
-                MATCH (p:Patient {id: $id_fonctionnel})
-                MERGE (u)-[:EST]->(p)
-                """
-            elif utilisateur_data["role"] == "medecin":
-                relation_query = """
-                MATCH (u:Utilisateur {id: $id})
-                MATCH (m:Medecin {id: $id_fonctionnel})
-                MERGE (u)-[:EST]->(m)
-                """
-
-            if relation_query:
-                session.run(relation_query, id=utilisateur_data["id"], id_fonctionnel=utilisateur_data["id_fonctionnel"])
-
-    print("✅ Utilisateurs et relations fonctionnelles synchronisés vers Neo4j.")
 
 # === GLOBAL ===
 
@@ -136,6 +98,4 @@ def sync_all():
     sync_medecins()
     print("🔄 Synchronisation des consultations...")
     sync_consultations_from_mongo()
-    print("🔄 Synchronisation des utilisateurs...")
-    sync_utilisateurs()
     print("✅ Synchronisation terminée.")

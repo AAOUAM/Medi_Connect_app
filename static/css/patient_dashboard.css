@@ -1,140 +1,278 @@
-@import url('dashboard_medecin.css'); /* Réutilise toutes les variables et styles communs */
+/* ==========================================================================
+   1. Variables et Styles Globaux
+   ========================================================================== */
+
+/* Définition d'une palette de couleurs pour une maintenance facile */
+:root {
+    --primary-color: #007bff;      /* Bleu vif pour les actions principales */
+    --primary-color-dark: #0056b3; /* Bleu plus foncé pour le survol */
+    --secondary-color: #6c757d;    /* Gris pour les actions secondaires */
+    --light-gray: #f8f9fa;         /* Gris très clair pour les fonds */
+    --border-color: #dee2e6;       /* Couleur des bordures */
+    --text-color: #343a40;         /* Couleur principale du texte */
+    --text-color-light: #6c757d;   /* Couleur de texte plus claire */
+    --background-color: #eef2f5;   /* Couleur de fond du body */
+    --card-background: #ffffff;      /* Fond des cartes (blanc) */
+    --shadow-color: rgba(0, 0, 0, 0.05); /* Couleur de l'ombre portée */
+    --alert-bg: #e9f5ff;           /* Fond pour les messages d'alerte */
+    --alert-border: #b8dfff;       /* Bordure pour les messages d'alerte */
+}
+
+/* Reset de base et définition de la police */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px; /* Base pour les unités rem */
+}
 
 body {
-    font-family: var(--font-family);
-    background-color: var(--background-color);
-    color: var(--dark-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
 }
 
+
+/* ==========================================================================
+   2. Conteneur principal et En-tête
+   ========================================================================== */
+
 .container {
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
 }
 
-/* --- Titre principal --- */
-h2 {
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
     margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+    font-size: 1.25rem;
+}
+
+.logo strong {
     color: var(--primary-color);
-    font-size: 1.5rem;
+}
+
+/* Style commun pour les boutons */
+.btn-logout,
+.filters button,
+.filters a {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid transparent;
     text-align: center;
 }
 
-/* --- Filtres --- */
+/* Style du bouton de déconnexion (action principale) */
+.btn-logout {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-logout:hover {
+    background-color: var(--primary-color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+
+/* ==========================================================================
+   3. Titres et Filtres
+   ========================================================================== */
+
+h2 {
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
 .filters {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    margin-bottom: 2rem;
-    background-color: var(--card-bg-color);
+    flex-wrap: wrap; /* Permet aux filtres de passer à la ligne sur mobile */
+    gap: 1.5rem;
+    background-color: var(--card-background);
     padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .form-group {
-    flex: 1 1 45%;
+    flex: 1 1 200px; /* Flex-grow, flex-shrink, flex-basis */
     display: flex;
     flex-direction: column;
 }
 
 .form-group label {
     margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--dark-color);
+    font-weight: 500;
+    color: var(--text-color-light);
 }
 
-.form-group input {
-    padding: 0.6rem;
-    border: 1px solid #ccc;
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
+.form-group input[type="text"],
+.form-group input[type="date"] {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
 }
 
 .form-actions {
     display: flex;
-    align-items: flex-end;
-    gap: 1rem;
+    align-items: flex-end; /* Aligne les boutons en bas */
+    gap: 0.75rem;
 }
 
-.form-actions button,
-.form-actions a {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-    border: none;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.form-actions button {
+.filters button {
     background-color: var(--primary-color);
     color: white;
+    border-color: var(--primary-color);
 }
 
-.form-actions button:hover {
-    background-color: #0056b3;
+.filters button:hover {
+    background-color: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
 }
 
-.form-actions a {
-    background-color: var(--secondary-color);
-    color: white;
+.filters a {
+    background-color: transparent;
+    color: var(--secondary-color);
+    border: 1px solid var(--border-color);
 }
 
-.form-actions a:hover {
-    background-color: #545b62;
+.filters a:hover {
+    background-color: var(--light-gray);
+    color: var(--text-color);
 }
 
-/* --- Tableau --- */
+/* ==========================================================================
+   4. Carte et Tableau de l'historique
+   ========================================================================== */
+
 .card {
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    overflow: hidden;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    overflow: hidden; /* Pour que le tableau ne dépasse pas les coins arrondis */
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 0; /* Le padding sera sur les cellules du tableau */
 }
 
 .table-responsive {
-    width: 100%;
-    overflow-x: auto;
+    overflow-x: auto; /* Active le défilement horizontal sur petits écrans */
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.95rem;
 }
 
 th, td {
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     text-align: left;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap; /* Empêche le texte de passer à la ligne trop vite */
 }
 
 thead th {
-    background-color: var(--light-color);
+    background-color: var(--light-gray);
     font-weight: 600;
-    color: var(--secondary-color);
+    color: var(--text-color-light);
     text-transform: uppercase;
-    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:last-child td {
+    border-bottom: none; /* Pas de bordure pour la dernière ligne */
 }
 
 tbody tr:hover {
-    background-color: #f1f3f5;
+    background-color: #f1f7ff; /* Bleu très clair au survol */
 }
 
-/* --- Message vide --- */
+td:first-child, th:first-child {
+    font-weight: 500; /* Met en évidence la première colonne (Médecin) */
+}
+
+
+/* ==========================================================================
+   5. Alerte et Responsive
+   ========================================================================== */
+
 .alert {
+    padding: 1.5rem;
     text-align: center;
-    color: #868e96;
-    padding: 2rem;
-    font-style: italic;
-    background-color: var(--light-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    background-color: var(--alert-bg);
+    border: 1px solid var(--alert-border);
+    color: var(--primary-color-dark);
+    margin: 2rem;
+    border-radius: 6px;
+}
+
+/* Media Queries pour la responsivité */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .user-nav {
+        width: 100%;
+    }
+
+    .btn-logout {
+        width: 100%;
+        text-align: center;
+    }
+
+    .filters {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch; /* Les boutons prennent toute la largeur */
+        width: 100%;
+    }
+
+    td, th {
+        white-space: normal; /* Permet au texte de revenir à la ligne sur mobile */
+    }
 }
