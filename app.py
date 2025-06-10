@@ -1,13 +1,15 @@
-from flask import Flask, render_template, json , flash, redirect, url_for , request ,  session, flash, jsonify
+from flask import Flask, render_template, json , flash, redirect, url_for , request ,  session, flash 
 import services.mongo_service as mongo_service 
 from models import utilisateur 
 from services.synch_service import sync_all
 from services.auth_service import AuthService, login_required, admin_required, medecin_required, patient_required
-from bson.objectid import ObjectId # Important pour les ID
+from bson.objectid import ObjectId 
 from datetime import datetime
 
 from models import patient
 from models import medecin  
+from models import utilisateur
+
 
 
 app = Flask(__name__)
@@ -18,7 +20,6 @@ app.secret_key = ' '
 
 @app.route('/')
 def index():
-    """Page d'accueil - Redirection vers login si non connecté"""
     if 'user_id' in session:
         user_role = session.get('user_role')
         if user_role == 'admin':
@@ -29,11 +30,9 @@ def index():
             return redirect(url_for('patient_dashboard'))
     return redirect(url_for('login'))
 
-# app.py
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Page de connexion"""
     # Étape 1: Si l'utilisateur est déjà connecté, rediriger immédiatement
     if 'user_id' in session and 'user_role' in session:
         user_role = session['user_role']    
@@ -52,7 +51,6 @@ def login():
 
         if not email or not password:
             flash('Veuillez remplir tous les champs', 'error')
-            # On reste sur la page de login pour afficher l'erreur
             return render_template('login.html')
 
         result = AuthService.authenticate_user(email, password)
@@ -60,7 +58,7 @@ def login():
         if result['success']:
             user = result['user']
             session.permanent = True
-            session['user_id'] = str(user['id']) # Important: Stocker l'ID de l'utilisateur ('utilisateurs')
+            session['user_id'] = str(user['id'])
             session['user_email'] = user['email']
             session['user_role'] = user['role']
             session['user_nom'] = user.get('nom', '')
@@ -83,10 +81,8 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
-    """Déconnexion utilisateur"""
     user_name = session.get('user_prenom', '') or session.get('user_email', 'Utilisateur')
     session.clear()
-
     flash(f'Au revoir {user_name}! Vous avez été déconnecté.', 'info')
     return redirect(url_for('login'))  
 
@@ -95,6 +91,7 @@ def logout():
 
 
 # ==================== ROUTES D'ADMINISTRATION ====================
+
 @app.route('/admin/')
 @app.route('/admin/dashboard')
 def dashboard_admin():
@@ -104,24 +101,24 @@ def dashboard_admin():
 
     nb_patients = mongo_service.count_patients()
     nb_medecins = mongo_service.count_medecins()
-    nb_total_consultations = mongo_service.count_consultations() # Renommé pour clarté
+    nb_total_consultations = mongo_service.count_consultations() 
     nb_utilisateurs = mongo_service.count_users()
 
-    # Utiliser la fonction de service qui fait déjà les lookups et le formatage
     recent_consultations = mongo_service.get_recent_consultations_with_details(limit=5)
         
-    # Récupérer les données pour le graphique d'évolution mensuelle
     monthly_stats = mongo_service.get_monthly_consultation_stats()
 
+    admin_user = session.get('user_nom')
 
     return render_template("dashboard_admin.html",
+                           admin_user_nom=admin_user,
                            nb_patients=nb_patients,
                            nb_medecins=nb_medecins,
                            # Passer le nombre total pour la carte stat, et la liste pour le tableau
                            nb_consultations=nb_total_consultations, 
                            nb_utilisateurs=nb_utilisateurs,
                            consultations=recent_consultations, # C'est la liste enrichie et limitée
-                           # Sérialiser en JSON pour le JavaScript
+                           
                            monthly_consultation_labels=json.dumps(monthly_stats.get('labels', [])),
                            monthly_consultation_data=json.dumps(monthly_stats.get('data', []))
                            )

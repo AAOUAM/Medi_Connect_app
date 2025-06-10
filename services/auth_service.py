@@ -19,7 +19,7 @@ class AuthService:
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
 
     @staticmethod
-    def create_user(email, password, role, nom=None):
+    def create_user(email, password, role, nom=None ):
 
         # Vérifier si l'utilisateur existe déjà
         if get_utilisateur_by_email(email):
