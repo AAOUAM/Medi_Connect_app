@@ -4,85 +4,97 @@
  <meta charset="UTF-8" />
  <meta name="viewport" content="width=device-width, initial-scale=1" />
  <title>Gestion des Médecins</title>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
- <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
- <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity.css') }}" />
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+ 
+ <!-- On charge les NOUVEAUX fichiers CSS pour le nouveau design -->
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_reborn.css') }}" />
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity_reborn.css') }}" />
 </head>
 <body>
- <div class="sidebar">
-  <div class="sidebar-header">
-   <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
-  </div>
-  <ul class="sidebar-nav">
-   <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-   <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users"></i> Gérer Patients</a></li>
-   <li class="active"><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
-   <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Voir Consultations</a></li>
-   <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
-   <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-  </ul>
- </div>
 
- <div class="main-content">
-  <header>
-   <h1><i class="fas fa-user-md"></i> Gestion des Médecins</h1>
-   <div class="user-info">
-    <span>Admin User <i class="fas fa-user-circle"></i></span>
-   </div>
-  </header>
+<!-- Barre de navigation supérieure (layout autonome) -->
+<header class="main-header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logos/mon-logo.png') }}" alt="Logo">
+    </div>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Tableau de bord</a></li>
+            <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users fa-fw"></i> Patients</a></li>
+            <!-- Lien actif pour cette page -->
+            <li class="active"><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md fa-fw"></i> Médecins</a></li>
+            <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt fa-fw"></i> Consultations</a></li>
+            <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog fa-fw"></i> Utilisateurs</a></li>
+        </ul>
+    </nav>
+    <div class="header-user">
+        <span>Bienvenue, <strong>{{ admin_user_nom or 'Admin' }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+</header>
 
-  <div class="container">
-    <div class="page-controls">
-      <div class="search-bar">
-        <input type="text" id="searchPatientInput" placeholder="Rechercher par nom, prénom, ID...">
-        <button type="button" id="searchPatientButton" aria-label="Rechercher"><i class="fas fa-search"></i></button>
-      </div>
-      <a href="{{ url_for('add_medecin') }}" class="btn btn-primary btn-add-entity">
-        <i class="fas fa-user-plus"></i> Ajouter un médecin
-      </a>
+<!-- Conteneur principal de la page -->
+<main class="page-container">
+    
+    <!-- En-tête de la page de gestion -->
+    <div class="page-header">
+       <h1><i class="fas fa-user-md"></i> Gestion des Médecins</h1>
+       <div class="page-controls">
+         <a href="{{ url_for('add_medecin') }}" class="btn-add">
+           <i class="fas fa-user-plus"></i> Ajouter un médecin
+         </a>
+       </div>
     </div>
 
+    <!-- Carte contenant la table -->
+    <div class="card">
+        {% if medecins %}
+        <div class="table-responsive">
+             <table class="entity-table">
+              <thead>
+               <tr>
+                <th>Nom</th>
+                <th>Spécialité</th>
+                <th>Adresse</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Disponibilités</th>
+                <th>Expériences</th>
+                <th class="text-center">Actions</th>
+               </tr>
+              </thead>
+              <tbody>
+               {% for medecin in medecins %}
+               <tr>
+                <td data-label="Nom">{{ medecin.nom }}</td>
+                <td data-label="Spécialité">{{ medecin.specialite }}</td>
+                <td data-label="Adresse">{{ medecin.adresse }}</td>
+                <td data-label="Téléphone">{{ medecin.num_tel }}</td>
+                <td data-label="Email">{{ medecin.email }}</td>
+                <td data-label="Disponibilités">{{ medecin.disponibilite | join(', ') }}</td>
+                <td data-label="Expériences">{{ medecin.experiences }}</td>
+                <td data-label="Actions" class="actions-cell">
+                 <a href="{{ url_for('edit_medecin', medecin_id=medecin._id) }}" class="btn-action edit" title="Modifier"><i class="fas fa-edit"></i></a>
+                 <form action="{{ url_for('delete_medecin', medecin_id=medecin._id) }}" method="post" class="delete-form" onsubmit="return confirm('Confirmer la suppression ?');">
+                  <button type="submit" class="btn-action delete" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                 </form>
+                </td>
+               </tr>
+               {% endfor %}
+              </tbody>
+             </table>
+        </div>
+        {% else %}
+        <div class="no-data-card">
+            <i class="fas fa-user-md fa-3x"></i>
+            <p>Aucun médecin n'a été trouvé.</p>
+            <a href="{{ url_for('add_medecin') }}" class="btn-add">Commencer par ajouter un médecin</a>
+        </div>
+        {% endif %}
+    </div>
 
-   <table class="table-list">
-    <thead>
-     <tr>
-      <th>Nom</th>
-      <th>Spécialité</th>
-      <th>Adresse</th>
-      <th>Téléphone</th>
-      <th>Email</th>
-      <th>Disponibilités</th>
-      <th>Expériences</th>
-      <th>Actions</th>
-     </tr>
-    </thead>
-    <tbody>
-     {% for medecin in medecins %}
-     <tr>
-      <td>{{ medecin.nom }}</td>
-      <td>{{ medecin.specialite }}</td>
-      <td>{{ medecin.adresse }}</td>
-      <td>{{ medecin.num_tel }}</td>
-      <td>{{ medecin.email }}</td>
-      <td>{{ medecin.disponibilite | join(', ') }}</td>
-      <td>{{ medecin.experiences }}</td>
-      <td>
-       <a href="{{ url_for('edit_medecin', medecin_id=medecin._id) }}" class="btn-action edit" title="Modifier"><i class="fas fa-edit"></i></a>
-       <form action="{{ url_for('delete_medecin', medecin_id=medecin._id) }}" method="post" style="display:inline-block;" onsubmit="return confirm('Confirmer la suppression ?');">
-        <button type="submit" class="btn-action delete" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-       </form>
-      </td>
-     </tr>
-     {% else %}
-     <tr>
-      <td colspan="8" style="text-align:center;">Aucun médecin trouvé.</td>
-     </tr>
-     {% endfor %}
-    </tbody>
-   </table>
-  </div>
- </div>
+</main>
 
- <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+ <script src="{{ url_for('static', filename='js/manage_entity.js') }}"></script>
 </body>
 </html>

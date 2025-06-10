@@ -1,72 +1,96 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
- <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- <title>Gestion des utilisateurs - Formulaire</title>
- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
- <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
- <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_form.css') }}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ 'Modifier Utilisateur' if utilisateur else 'Ajouter Utilisateur' }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  
+  <!-- On charge les TROIS fichiers CSS nécessaires pour le nouveau design -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_reborn.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity_reborn.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/form_reborn.css') }}" />
 </head>
 <body>
 
-<div class="sidebar">
- <div class="sidebar-header">
-  <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
- </div>
- <ul class="sidebar-nav">
-  <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-  <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users"></i> Gérer Patients</a></li>
-  <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
-  <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Voir Consultations</a></li>
-  <li><a href="{{ url_for('manage_users') }}" class="active"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
-  <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
- </ul>
-</div>
-
-<div class="main-content">
- <header>
-  <h1><i class="fas fa-users"></i> Gestion des utilisateurs - Formulaire</h1>
-  <div class="user-info">
-   <span>Admin User <i class="fas fa-user-circle"></i></span>
-  </div>
- </header>
-
- <div class="container">
-  <form method="POST" action="">
-      
-   <div class="form-group">
-    <label for="nom">Nom *</label>
-    <input type="text" id="nom" name="nom" required value="{{ utilisateur.nom if utilisateur else '' }}" />
-   </div>
-
-   <div class="form-group">
-    <label for="email">Email *</label>
-    <input type="email" id="email" name="email" required value="{{ utilisateur.email if utilisateur else '' }}" />
-   </div>
-      
-    <div class="form-group">
-        <label for="role">Rôle *</label>
-        <select id="role" name="role" required>
-          <option value="" disabled {{ 'selected' if not utilisateur }}>Sélectionner un rôle</option>
-          <option value="admin" {{ 'selected' if utilisateur and utilisateur.role == 'admin' }}>Admin</option>
-          <option value="medecin" {{ 'selected' if utilisateur and utilisateur.role == 'medecin' }}>Médecin</option>
-          <option value="patient" {{ 'selected' if utilisateur and utilisateur.role == 'patient' }}>Patient</option>
-        </select>
+<!-- Barre de navigation supérieure (layout autonome) -->
+<header class="main-header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logos/mon-logo.png') }}" alt="Logo">
     </div>
-      
-   <div class="form-group">
-    <label for="password">{{ 'Nouveau mot de passe' if utilisateur else 'Mot de passe *' }}</label>
-    <input type="password" id="password" name="password" {{ '' if utilisateur else 'required' }} placeholder="{{ 'Laissez vide pour garder l\'ancien' if utilisateur else '' }}" />
-   </div>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Tableau de bord</a></li>
+            <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users fa-fw"></i> Patients</a></li>
+            <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md fa-fw"></i> Médecins</a></li>
+            <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt fa-fw"></i> Consultations</a></li>
+            <!-- Le lien "Utilisateurs" est actif car on est dans son formulaire -->
+            <li class="active"><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog fa-fw"></i> Utilisateurs</a></li>
+        </ul>
+    </nav>
+    <div class="header-user">
+        <span>Bienvenue, <strong>{{ admin_user_nom or 'Admin' }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+</header>
 
-   <button type="submit" class="btn-submit">
-    {{ 'Modifier' if utilisateur else 'Ajouter' }}
-   </button>
-  </form>
- </div>
-</div>
+<!-- Conteneur principal de la page -->
+<main class="page-container">
+    <div class="page-header">
+       <h1>
+            {% if utilisateur %}
+                <i class="fas fa-user-edit"></i> Modifier l'Utilisateur
+            {% else %}
+                <i class="fas fa-user-plus"></i> Ajouter un Utilisateur
+            {% endif %}
+       </h1>
+    </div>
+
+    <!-- Carte contenant le formulaire -->
+    <div class="card form-card">
+        <form method="POST">
+            <!-- Grille pour une mise en page flexible des champs -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nom">Nom Complet *</label>
+                    <input type="text" id="nom" name="nom" required value="{{ utilisateur.nom if utilisateur else '' }}" />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required value="{{ utilisateur.email if utilisateur else '' }}" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Rôle *</label>
+                    <select id="role" name="role" required>
+                      <option value="" disabled {{ 'selected' if not utilisateur }}>Sélectionner un rôle</option>
+                      <option value="admin" {{ 'selected' if utilisateur and utilisateur.role == 'admin' }}>Admin</option>
+                      <option value="medecin" {{ 'selected' if utilisateur and utilisateur.role == 'medecin' }}>Médecin</option>
+                      <option value="patient" {{ 'selected' if utilisateur and utilisateur.role == 'patient' }}>Patient</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">{{ 'Nouveau mot de passe' if utilisateur else 'Mot de passe *' }}</label>
+                    <input type="password" id="password" name="password" {{ '' if utilisateur else 'required' }} placeholder="{{ 'Laissez vide pour ne pas changer' if utilisateur else '' }}" />
+                </div>
+            </div>
+
+            <!-- Actions du formulaire (Soumettre, Annuler) -->
+            <div class="form-actions">
+                <a href="{{ url_for('manage_users') }}" class="btn-cancel">Annuler</a>
+                <button type="submit" class="btn-submit">
+                    {% if utilisateur %}
+                        <i class="fas fa-save"></i> Enregistrer les modifications
+                    {% else %}
+                        <i class="fas fa-plus-circle"></i> Ajouter l'utilisateur
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
 
 </body>
 </html>

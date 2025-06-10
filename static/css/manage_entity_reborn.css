@@ -1,15 +1,31 @@
-/* static/css/manage_entity.css */
+/* static/css/manage_entity_reborn.css */
 
 /* ==========================================================================
    Contrôles de la Page (Recherche, Ajout)
    ========================================================================== */
-.page-controls {
+.page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur mobile */
+    flex-wrap: wrap;
     gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.page-header h1 i { color: var(--primary-color); }
+
+.page-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .search-bar {
@@ -18,13 +34,11 @@
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: var(--shadow-sm);
     padding: 0 0.75rem;
-    flex-grow: 1; /* Permet à la barre de recherche de grandir */
-    max-width: 400px;
+    min-width: 250px;
 }
 .search-bar i { color: var(--text-muted); }
-.search-bar input[type="text"] {
+.search-bar input {
     padding: 0.75rem 0.5rem;
     border: none;
     outline: none;
@@ -33,34 +47,26 @@
     width: 100%;
 }
 
-.btn.btn-primary { /* Style pour le bouton "Ajouter" */
+.btn-add {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
+    padding: 0.75rem 1.2rem;
+    border-radius: 8px;
     text-decoration: none;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
     background-color: var(--primary-color);
     color: white;
+    border: none;
+    transition: background-color 0.2s;
 }
-.btn.btn-primary:hover {
-    background-color: #2563eb; /* Bleu plus foncé */
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
+.btn-add:hover { background-color: var(--primary-color-hover); }
 
 /* ==========================================================================
    Tableau des entités
    ========================================================================== */
-
-/* Le conteneur .card est déjà stylé dans dashboard.css */
-/* On s'assure juste que le padding est retiré s'il y a un tableau à l'intérieur */
-.card .table-responsive {
+.table-responsive {
     margin: -1.5rem; /* Annule le padding du .card parent */
     overflow-x: auto;
 }
@@ -77,21 +83,18 @@
     vertical-align: middle;
 }
 .entity-table th {
-    background-color: #f8f9fa;
     font-weight: 600;
-    color: var(--text-color);
-    font-size: 0.9em;
+    color: var(--text-muted);
+    font-size: 0.85rem;
     text-transform: uppercase;
 }
-.entity-table tbody tr:hover { background-color: #f8f9fa; }
+.entity-table tbody tr:last-child td { border-bottom: none; }
+.entity-table tbody tr:hover { background-color: var(--bg-color); }
 .entity-table .text-center { text-align: center; }
 
 /* Cellule des actions */
-.actions-cell {
-    text-align: center;
-    white-space: nowrap;
-}
-.delete-form { display: inline-block; vertical-align: middle; margin: 0; padding: 0; }
+.actions-cell { text-align: center; white-space: nowrap; }
+.delete-form { display: inline-block; vertical-align: middle; margin: 0; }
 
 .btn-action {
     display: inline-flex;
@@ -101,55 +104,45 @@
     height: 32px;
     margin: 0 4px;
     border: none;
-    border-radius: 50%; /* Boutons ronds pour un look moderne */
+    border-radius: 50%;
     text-decoration: none;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s;
 }
-.btn-action:hover { transform: scale(1.1); }
-.btn-action.edit { background-color: #f59e0b; } /* Ambre */
-.btn-action.delete { background-color: #ef4444; } /* Rouge */
+.btn-action:hover { transform: scale(1.1); filter: brightness(1.1); }
+.btn-action.edit { background-color: #f59e0b; }
+.btn-action.delete { background-color: #ef4444; }
 
-
-/* ==========================================================================
-   Message "Aucune donnée"
-   ========================================================================== */
-.no-data-card {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-}
+/* Message "Aucune donnée" */
+.no-data-card { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 .no-data-card i { color: #d1d5db; margin-bottom: 1.5rem; }
 .no-data-card p { font-size: 1.2rem; margin-bottom: 1.5rem; font-weight: 500; }
 
-
 /* ==========================================================================
-   FIX RESPONSIVE MAJEUR
+   Responsive de la table
    ========================================================================== */
 @media screen and (max-width: 768px) {
-    .page-controls { justify-content: center; }
-
-    .entity-table thead { display: none; } /* On cache l'en-tête */
+    .page-header { flex-direction: column; align-items: flex-start; }
+    
+    .entity-table thead { display: none; }
     .entity-table tr {
         display: block;
         margin-bottom: 1.5rem;
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        box-shadow: var(--shadow-sm);
         padding: 1rem;
     }
     .entity-table td {
         display: block;
-        text-align: right; /* Aligne la donnée à droite */
-        padding-left: 50%; /* Laisse de la place pour le label à gauche */
+        text-align: right;
+        padding-left: 50%;
         position: relative;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-color);
     }
-    .entity-table td:last-child { border-bottom: none; }
-
+    .entity-table tr td:last-child { border-bottom: none; }
     .entity-table td::before {
-        content: attr(data-label); /* AFFICHE LE LABEL */
+        content: attr(data-label);
         position: absolute;
         left: 1rem;
         width: calc(50% - 2rem);
@@ -158,7 +151,6 @@
         text-align: left;
         color: var(--text-color);
     }
-
     .actions-cell { text-align: center !important; padding-top: 1rem; }
-    .actions-cell::before { display: none; } /* Pas de label pour les actions */
+    .actions-cell::before { display: none; }
 }

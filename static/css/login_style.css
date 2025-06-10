@@ -1,0 +1,150 @@
+/* ==========================================================================
+   Variables et Styles Globaux
+   ========================================================================== */
+:root {
+    --primary-color: #007bff; /* Bleu Bootstrap que l'on garde pour la cohérence */
+    --primary-gradient: linear-gradient(135deg, #007bff, #0056b3);
+    --background-color: #f0f2f5;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --text-muted-color: #6c757d;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-color: #dee2e6;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   Conteneur et Carte de Connexion
+   ========================================================================== */
+.login-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-card {
+    background: var(--card-background);
+    border-radius: 1rem; /* Coins plus arrondis pour un look moderne */
+    box-shadow: 0 10px 30px var(--shadow-color);
+    border: none;
+    overflow: hidden; /* Important pour que les coins arrondis s'appliquent partout */
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   En-tête de la carte (Logo et Titre)
+   ========================================================================== */
+.login-header {
+    text-align: center;
+    padding: 2.5rem 2rem 1.5rem 2rem;
+}
+
+.logo {
+    max-height: 100px;
+    margin-bottom: 1rem;
+}
+
+.login-header h2 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* ==========================================================================
+   Corps de la carte (Formulaire)
+   ========================================================================== */
+.login-body {
+    padding: 0 2.5rem 2.5rem 2.5rem;
+}
+
+/* Conteneur pour l'input et son icône */
+.input-group-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--border-color);
+    transition: color 0.2s;
+}
+
+/* Styles pour les champs de saisie */
+.form-control {
+    height: 50px;
+    padding-left: 45px; /* Laisse de la place pour l'icône */
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* Change la couleur de l'icône quand le champ est focus */
+.form-control:focus + .input-icon,
+.input-group-icon:focus-within .input-icon {
+    color: var(--primary-color);
+}
+
+/* ==========================================================================
+   Bouton et Liens
+   ========================================================================== */
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    padding: 0.8rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+}
+
+.text-muted a, a.text-muted {
+    color: var(--text-muted-color) !important;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a.text-muted:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Amélioration de l'alerte Bootstrap */
+.alert {
+    border-radius: 0.5rem;
+}

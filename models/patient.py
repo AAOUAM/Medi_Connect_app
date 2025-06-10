@@ -18,11 +18,10 @@ def create_patient(data):
         "nom": data["nom"],
         "prenom": data["prenom"],
         "age": data["age"],
-        "sexe": data["sexe"],
-        "date_naissance": data["date_naissance"],
-        "num_tel": data["num_tel"],
+        "telephone": data["telephone"],
         "email": data["email"],
-        "adresse": data["adresse"]
+        "adresse": data["adresse"],
+        "cin": data["cin"]
     }
     create_patient_node(neo4j_data)
     return patient_id
@@ -47,11 +46,10 @@ def update_patient_record(patient_id, updated_data):
         "nom": updated_patient["nom"],
         "prenom": updated_patient["prenom"],
         "age": updated_patient["age"],
-        "sexe": updated_patient["sexe"],
-        "date_naissance": updated_patient["date_naissance"],
-        "num_tel": updated_patient["num_tel"],
+        "telephone": updated_patient["telephone"],
         "email": updated_patient["email"],
-        "adresse": updated_patient["adresse"]
+        "adresse": updated_patient["adresse"],
+        "cin": update_patient["cin"],
     }
     update_patient_node(neo4j_data)
 

@@ -1,0 +1,153 @@
+/* static/css/form_reborn.css */
+
+/* ==========================================================================
+   1. Conteneur principal du formulaire
+   ========================================================================== */
+.form-card {
+    max-width: 800px; /* Limite la largeur du formulaire sur les grands écrans */
+    margin: 0 auto;   /* Centre le formulaire sur la page */
+}
+
+/* Le titre .page-header qui est au-dessus du formulaire est déjà 
+   stylé dans manage_entity_reborn.css, donc pas besoin de le redéfinir. */
+
+
+/* ==========================================================================
+   2. Grille et Champs du formulaire
+   ========================================================================== */
+.form-grid {
+    display: grid;
+    /* Crée 2 colonnes par défaut. Sur les petits écrans, elles s'adapteront. */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Utilitaire pour un champ qui doit occuper toute la largeur de la grille */
+.form-group.full-width {
+    grid-column: 1 / -1; /* S'étend de la première à la dernière colonne */
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Style commun pour tous les champs de saisie et zones de texte */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="number"],
+.form-group input[type="password"],
+.form-group textarea {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit; /* Utilise la même police que le reste de la page */
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Effet visuel lorsque l'utilisateur sélectionne un champ */
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(42, 109, 245, 0.2);
+}
+
+textarea {
+    resize: vertical; /* Permet à l'utilisateur de redimensionner verticalement */
+    min-height: 120px;
+}
+
+
+/* ==========================================================================
+   3. Éléments Spécifiques (Cases à cocher, etc.)
+   ========================================================================== */
+
+/* Style pour les groupes de cases à cocher (ex: disponibilités) */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem; /* Espace vertical et horizontal */
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal; /* Le label général est déjà en gras */
+    color: var(--text-color);
+    font-size: 1rem;
+}
+/* Style moderne pour la case à cocher elle-même */
+.checkbox-group input[type="checkbox"] {
+    width: 1.2em;
+    height: 1.2em;
+    accent-color: var(--primary-color); /* Change la couleur de la coche */
+    cursor: pointer;
+}
+
+
+/* ==========================================================================
+   4. Boutons d'action du formulaire
+   ========================================================================== */
+.form-actions {
+    display: flex;
+    justify-content: flex-end; /* Aligne les boutons à droite */
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Style commun pour les deux boutons */
+.btn-submit,
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+/* Style du bouton principal (Soumettre) */
+.btn-submit {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-submit:hover { 
+    background-color: var(--primary-color-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(42, 109, 245, 0.2);
+}
+
+/* Style du bouton secondaire (Annuler) */
+.btn-cancel {
+    background-color: var(--card-bg);
+    color: var(--text-muted);
+    border-color: var(--border-color);
+}
+.btn-cancel:hover { 
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}

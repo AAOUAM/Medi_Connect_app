@@ -1,16 +1,13 @@
 from services.mongo_service import (
     get_all_patients,
     get_all_medecins,
-    get_all_consultations,
-    get_all_users
+    get_all_consultations
 )
 from services.neo4j_service import (
     create_patient_node,
     create_medecin_node,
-    create_utilisateur_node,
     delete_patient_node,
     delete_medecin_node,
-    delete_utilisateur_node,
     driver
 )
 
@@ -85,17 +82,15 @@ def sync_consultations_from_mongo():
 
             session.run(query, **properties)
 
-    print("✅ Consultations synchronisées vers Neo4j.")
+    print("Consultations synchronisées vers Neo4j.")
 
 
-
-# === GLOBAL ===
 
 def sync_all():
-    print("🔄 Synchronisation des patients...")
+    print("Synchronisation des patients...")
     sync_patients()
-    print("🔄 Synchronisation des médecins...")
+    print("Synchronisation des médecins...")
     sync_medecins()
-    print("🔄 Synchronisation des consultations...")
+    print("Synchronisation des consultations...")
     sync_consultations_from_mongo()
-    print("✅ Synchronisation terminée.")
+    print("Synchronisation terminée.")

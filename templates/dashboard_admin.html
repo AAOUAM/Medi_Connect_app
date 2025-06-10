@@ -3,122 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tableau de bord Admin</title>
+  <title>Nouveau Tableau de bord - Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- On charge le NOUVEAU fichier CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_reborn.css') }}">
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-header">
-    <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
-  </div>
-  <ul class="sidebar-nav">
-    <!-- La classe 'active' sera gérée par JavaScript ou par une logique Jinja si vous utilisez layout.html -->
-    <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-    <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users"></i> Gérer Patients</a></li>
-    <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
-    <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Voir Consultations</a></li>
-    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
-    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-  </ul>
-</div>
-
-<div class="main-content">
-  <header>
-    <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord</h1>
-    <div class="user-info">
-      <span>{{ admin_user_nom }} <i class="fas fa-user-circle"></i></span>
+<!-- NOUVELLE STRUCTURE : Header de navigation en haut -->
+<header class="main-header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logos/mon-logo.png') }}" alt="Logo">
     </div>
-  </header>
-
-  <div class="container">
-    <div class="stats-grid">
-       <div class="stat-card patients">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-info">
-          <p><strong>Patients Enregistrés</strong></p>
-          <h2>{{ nb_patients }}</h2>
-        </div>
-      </div>
-      <div class="stat-card medecins">
-        <div class="stat-icon"><i class="fas fa-user-md"></i></div>
-        <div class="stat-info">
-          <p><strong>Médecins Actifs</strong></p>
-          <h2>{{ nb_medecins }}</h2>
-        </div>
-      </div>
-      <div class="stat-card consultations">
-        <div class="stat-icon"><i class="fas fa-file-medical-alt"></i></div>
-        <div class="stat-info">
-          <p><strong>Consultations Total</strong></p>
-          <h2>{{ nb_consultations }}</h2>
-        </div>
-      </div>
-      <div class="stat-card utilisateurs">
-        <div class="stat-icon"><i class="fas fa-users-cog"></i></div>
-        <div class="stat-info">
-          <p><strong>Utilisateurs du Système</strong></p>
-          <h2>{{ nb_utilisateurs }}</h2>
-        </div>
-      </div>
+    <nav class="main-nav">
+        <ul>
+            <li class="active"><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Tableau de bord</a></li>
+            <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users fa-fw"></i> Patients</a></li>
+            <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md fa-fw"></i> Médecins</a></li>
+            <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt fa-fw"></i> Consultations</a></li>
+            <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog fa-fw"></i> Utilisateurs</a></li>
+        </ul>
+    </nav>
+    <div class="header-user">
+        <span>Bienvenue, <strong>{{ admin_user_nom or 'Admin' }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
     </div>
+</header>
 
-    <div class="charts-section">
-        <div class="chart-container">
-          <h3>Statistiques Générales</h3>
-          <canvas id="statsChart"
-                  data-nb-patients="{{ nb_patients }}"
-                  data-nb-medecins="{{ nb_medecins }}"
-                  data-nb-consultations="{{ nb_consultations }}"
-                  data-nb-utilisateurs="{{ nb_utilisateurs }}"></canvas>
+<!-- Conteneur principal de la page -->
+<main class="page-container">
+
+    <!-- NOUVELLE STRUCTURE : Grille à deux colonnes -->
+    <div class="dashboard-grid">
+    
+        <!-- Colonne Principale (plus large) -->
+        <div class="main-column">
+            <!-- CARTE 1 : GRAPHIQUE D'ÉVOLUTION -->
+            <div class="card chart-container">
+                <h3><i class="fas fa-chart-line"></i> Évolution Mensuelle des Consultations</h3>
+                <canvas id="anotherChart"
+                        data-labels='{{ monthly_consultation_labels | safe }}'
+                        data-values='{{ monthly_consultation_data | safe }}'>
+                </canvas>
+            </div>
+            
+            <!-- CARTE 2 : TABLEAU DES CONSULTATIONS RÉCENTES -->
+            <div class="card">
+                <h3><i class="fas fa-notes-medical"></i> Consultations Récentes</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                          <tr>
+                            <th>Patient</th>
+                            <th>Médecin</th>
+                            <th>Date</th>
+                            <th>Diagnostic</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for consult in consultations %}
+                          <tr>
+                            <td><i class="fas fa-user-injured"></i> {{ consult.nom_patient }}</td>
+                            <td><i class="fas fa-user-md"></i> {{ consult.nom_medecin }}</td>
+                            <td><i class="fas fa-calendar-alt"></i> {{ consult.date }}</td>
+                            <td>{{ consult.diagnostic }}</td>
+                          </tr>
+                          {% else %}
+                          <tr>
+                            <td colspan="4" class="text-center">Aucune consultation récente.</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="chart-container">
-            <!-- Titre mis à jour pour refléter le contenu réel -->
-            <h3>Évolution Mensuelle des Consultations</h3>
-            <!-- AJOUT DES ATTRIBUTS data-* POUR LES DONNÉES RÉELLES -->
-            <canvas id="anotherChart"
-                    data-labels='{{ monthly_consultation_labels | safe }}'
-                    data-values='{{ monthly_consultation_data | safe }}'></canvas>
+
+        <!-- Colonne Secondaire (plus étroite) -->
+        <div class="sidebar-column">
+            <!-- CARTE 3 : GRAPHIQUE VUE D'ENSEMBLE -->
+            <div class="card chart-container">
+                <h3><i class="fas fa-pie-chart"></i> Vue d'ensemble</h3>
+                <canvas id="statsChart"
+                        data-nb-patients="{{ nb_patients }}"
+                        data-nb-medecins="{{ nb_medecins }}"
+                        data-nb-consultations="{{ nb_consultations }}"
+                        data-nb-utilisateurs="{{ nb_utilisateurs }}"></canvas>
+            </div>
+            
+            <!-- CARTE 4 : STATISTIQUES CLÉS -->
+            <div class="card">
+                <h3><i class="fas fa-signal"></i> Statistiques Clés</h3>
+                <div class="stats-grid">
+                    <div class="stat-card patients">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                          <h2>{{ nb_patients }}</h2>
+                          <p>Patients</p>
+                        </div>
+                    </div>
+                    <div class="stat-card medecins">
+                        <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="stat-info">
+                          <h2>{{ nb_medecins }}</h2>
+                          <p>Médecins</p>
+                        </div>
+                    </div>
+                    <div class="stat-card consultations">
+                        <div class="stat-icon"><i class="fas fa-file-medical-alt"></i></div>
+                        <div class="stat-info">
+                          <h2>{{ nb_consultations }}</h2>
+                          <p>Consultations</p>
+                        </div>
+                    </div>
+                    <div class="stat-card utilisateurs">
+                        <div class="stat-icon"><i class="fas fa-users-cog"></i></div>
+                        <div class="stat-info">
+                          <h2>{{ nb_utilisateurs }}</h2>
+                          <p>Utilisateurs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="recent-consultations">
-      <h3><i class="fas fa-notes-medical"></i> Consultations Récentes</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Patient</th>
-            <th>Médecin</th>
-            <th>Date</th>
-            <th>Diagnostic Principal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for consult in consultations %}
-          <tr>
-            <td><i class="fas fa-user-injured"></i> {{ consult.nom_patient }}</td>
-            <td><i class="fas fa-user-md"></i>{{ consult.nom_medecin }}</td>
-            <td><i class="fas fa-calendar-alt"></i> {{ consult.date }}</td>
-            <td>{{ consult.diagnostic }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="5" style="text-align: center;">Aucune consultation récente.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
     </div>
-
-    <div class="quick-actions">
-      <h3><i class="fas fa-bolt"></i> Actions Rapides</h3>
-      <a href="{{ url_for('add_patient') }}" class="btn btn-success"><i class="fas fa-user-plus"></i> Ajouter Patient</a>
-      <a href="{{ url_for('add_medecin') }}" class="btn btn-info"><i class="fas fa-user-md"></i> Ajouter Médecin</a>
-    </div>
-  </div>
-</div>
+</main>
 
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>

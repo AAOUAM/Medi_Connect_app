@@ -2,7 +2,7 @@ from services.mongo_service import (
     get_consultation_by_id,
     get_all_consultations,
     get_consultations_by_medecin,
-    get_consultations_by_patient_id  # À utiliser si défini
+    get_consultations_by_patient_id  
 )
 
 def retrieve_consultation(consultation_id):

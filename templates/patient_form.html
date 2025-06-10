@@ -3,87 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tableau de bord Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_form.css') }}" />
+  <title>{{ 'Modifier Patient' if patient else 'Ajouter Patient' }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  
+  <!-- On charge les TROIS fichiers CSS nécessaires pour le nouveau design -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_reborn.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity_reborn.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/form_reborn.css') }}" />
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-header">
-    <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
-  </div>
-  <ul class="sidebar-nav">
-    <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-    <li><a href="{{ url_for('manage_patients') }}" class="active"><i class="fas fa-users"></i> Gérer Patients</a></li>
-    <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
-    <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Voir Consultations</a></li>
-    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
-    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-  </ul>
-</div>
-
-<div class="main-content">
-  <header>
-    <h1><i class="fas fa-users"></i> Gestion des Patients - Formulaire</h1>
-    <div class="user-info">
-      <span>Admin User <i class="fas fa-user-circle"></i></span>
+<!-- Barre de navigation supérieure (layout autonome) -->
+<header class="main-header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logos/mon-logo.png') }}" alt="Logo">
     </div>
-  </header>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Tableau de bord</a></li>
+            <!-- Le lien "Patients" est actif car on est dans son formulaire -->
+            <li class="active"><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users fa-fw"></i> Patients</a></li>
+            <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md fa-fw"></i> Médecins</a></li>
+            <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt fa-fw"></i> Consultations</a></li>
+            <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog fa-fw"></i> Utilisateurs</a></li>
+        </ul>
+    </nav>
+    <div class="header-user">
+        <span>Bienvenue, <strong>{{ admin_user_nom or 'Admin' }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+</header>
 
-  <div class="container">
+<!-- Conteneur principal de la page -->
+<main class="page-container">
+    <div class="page-header">
+       <h1>
+            {% if patient %}
+                <i class="fas fa-user-edit"></i> Modifier le Patient
+            {% else %}
+                <i class="fas fa-user-plus"></i> Ajouter un Patient
+            {% endif %}
+       </h1>
+    </div>
 
-    {% if error %}
-      <div class="error-message">{{ error }}</div>
-    {% endif %}
+    <!-- Carte contenant le formulaire -->
+    <div class="card form-card">
+        
+        {% if error %}
+            <!-- Amélioration de l'affichage du message d'erreur -->
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
 
-    <form method="POST">
+        <form method="POST">
+            <!-- Grille pour une mise en page flexible des champs -->
+            <div class="form-grid">
+                <div class="form-group">
+                  <label for="cin">CIN *</label>
+                  <input type="text" id="cin" name="cin" required value="{{ patient.cin if patient else '' }}" />
+                </div>
 
-      <div class="form-group">
-        <label for="nom">CIN *</label>
-        <input type="text" id="cin" name="cin" required value="{{ patient.cin if patient else '' }}" />
-      </div>
+                <div class="form-group">
+                  <label for="nom">Nom *</label>
+                  <input type="text" id="nom" name="nom" required value="{{ patient.nom if patient else '' }}" />
+                </div>
 
-      <div class="form-group">
-        <label for="nom">Nom *</label>
-        <input type="text" id="nom" name="nom" required value="{{ patient.nom if patient else '' }}" />
-      </div>
+                <div class="form-group">
+                  <label for="prenom">Prénom *</label>
+                  <input type="text" id="prenom" name="prenom" required value="{{ patient.prenom if patient else '' }}" />
+                </div>
 
-      <div class="form-group">
-        <label for="prenom">Prénom *</label>
-        <input type="text" id="prenom" name="prenom" required value="{{ patient.prenom if patient else '' }}" />
-      </div>
+                <div class="form-group">
+                  <label for="age">Âge *</label>
+                  <input type="number" id="age" name="age" min="0" required value="{{ patient.age if patient else '' }}" />
+                </div>
+                
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" value="{{ patient.email if patient else '' }}" />
+                </div>
+                
+                <div class="form-group">
+                  <label for="telephone">Téléphone</label>
+                  <input type="text" id="telephone" name="telephone" value="{{ patient.telephone if patient else '' }}" />
+                </div>
 
-      <div class="form-group">
-        <label for="age">Âge *</label>
-        <input type="number" id="age" name="age" min="0" required value="{{ patient.age if patient else '' }}" />
-      </div>
+                <!-- Ce champ prend toute la largeur -->
+                <div class="form-group full-width">
+                  <label for="adresse">Adresse</label>
+                  <input type="text" id="adresse" name="adresse" value="{{ patient.adresse if patient else '' }}" />
+                </div>
+            </div>
 
-      <div class="form-group">
-        <label for="adresse">Adresse</label>
-        <input type="text" id="adresse" name="adresse" value="{{ patient.adresse if patient else '' }}" />
-      </div>
+            <!-- Actions du formulaire (Soumettre, Annuler) -->
+            <div class="form-actions">
+                <a href="{{ url_for('manage_patients') }}" class="btn-cancel">Annuler</a>
+                <button type="submit" class="btn-submit">
+                    {% if patient %}
+                        <i class="fas fa-save"></i> Enregistrer les modifications
+                    {% else %}
+                        <i class="fas fa-plus-circle"></i> Ajouter le patient
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
 
-      <div class="form-group">
-        <label for="telephone">Téléphone</label>
-        <input type="text" id="telephone" name="telephone" value="{{ patient.telephone if patient else '' }}" />
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="{{ patient.email if patient else '' }}" />
-      </div>
-
-      <button type="submit" class="btn-submit">
-        {{ 'Modifier' if patient else 'Ajouter' }}
-      </button>
-    </form>
-
-  </div>
-</div>
-
-<!-- <script src="{{ url_for('static', filename='js/main.js') }}"></script> -->
 </body>
 </html>

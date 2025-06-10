@@ -3,92 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestion des Patients - Admin</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Gestion des Consultations</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  
+  <!-- On charge les NOUVEAUX fichiers CSS pour le nouveau design -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_reborn.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_entity_reborn.css') }}">
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-header">
-    <h3><i class="fas fa-hospital-user"></i> Admin Panel</h3>
-  </div>
-  <ul class="sidebar-nav">
-    <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-    <li><a href="{{ url_for('manage_patients') }}" class="active"><i class="fas fa-users"></i> Gérer Patients</a></li>
-    <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md"></i> Gérer Médecins</a></li>
-    <li><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt"></i> Voir Consultations</a></li>
-    <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog"></i> Gérer Utilisateurs</a></li>
-    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-  </ul>
-</div>
-
-<div class="main-content">
-  <header>
-    <h1><i class="fas fa-file-medical-alt"></i> Gestion des Consultations</h1>
-    <div class="user-info">
-      <span>Admin User <i class="fas fa-user-circle"></i></span>
+<!-- Barre de navigation supérieure (layout autonome) -->
+<header class="main-header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='logos/mon-logo.png') }}" alt="Logo">
     </div>
-  </header>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt fa-fw"></i> Tableau de bord</a></li>
+            <li><a href="{{ url_for('manage_patients') }}"><i class="fas fa-users fa-fw"></i> Patients</a></li>
+            <li><a href="{{ url_for('manage_medecins') }}"><i class="fas fa-user-md fa-fw"></i> Médecins</a></li>
+            <!-- Lien actif pour cette page -->
+            <li class="active"><a href="{{ url_for('manage_consultations') }}"><i class="fas fa-file-medical-alt fa-fw"></i> Consultations</a></li>
+            <li><a href="{{ url_for('manage_users') }}"><i class="fas fa-users-cog fa-fw"></i> Utilisateurs</a></li>
+        </ul>
+    </nav>
+    <div class="header-user">
+        <span>Bienvenue, <strong>{{ admin_user_nom or 'Admin' }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+</header>
 
-  <div class="container">
-    <div class="page-controls">
-      <div class="search-bar">
-        <input type="text" id="searchPatientInput" placeholder="Rechercher par nom, prénom, ID...">
-        <button type="button" id="searchPatientButton" aria-label="Rechercher"><i class="fas fa-search"></i></button>
+<!-- Conteneur principal de la page -->
+<main class="page-container">
+    
+    <!-- En-tête de la page de gestion -->
+    <div class="page-header">
+      <h1><i class="fas fa-file-medical-alt"></i> Gestion des Consultations</h1>
+      <div class="page-controls">
       </div>
     </div>
 
-    <div class="entity-list-container">
+    <!-- Carte contenant la table -->
+    <div class="card">
       {% if consultations %}
-      <table class="entity-table" id="patientsTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Patient</th>
-            <th>Docteur</th>
-            <th>Date</th>
-            <th>diagnostic</th>
-            <th>prescriptions</th>
-            <th>notes</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for c in consultations %}
-            <tr>
-            <td>{{ c._id }}</td>
-            <td>{{ c.nom_patient }}</td>
-            <td>{{ c.nom_medecin }}</td>
-            <td>{{ c.date }}</td>
-            <td>{{ c.diagnostic }}</td>
-            <td>
-                {% if c.prescriptions %}
-                <ul>
-                    {% for p in c.prescriptions %}
-                    <li>{{ p }}</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                N/A
-                {% endif %}
-            </td>
-            <td>{{ c.notes or 'N/A' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-responsive">
+          <table class="entity-table" id="consultationsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Médecin</th>
+                <th>Date</th>
+                <th>Diagnostic</th>
+                <th>Prescriptions</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for c in consultations %}
+                <tr>
+                  <td data-label="ID">{{ c._id }}</td>
+                  <td data-label="Patient">{{ c.nom_patient }}</td>
+                  <td data-label="Médecin">{{ c.nom_medecin }}</td>
+                  <td data-label="Date">{{ c.date }}</td>
+                  <td data-label="Diagnostic">{{ c.diagnostic }}</td>
+                  <td data-label="Prescriptions">
+                      {% if c.prescriptions %}
+                      <ul class="prescription-list">
+                          {% for p in c.prescriptions %}
+                          <li>{{ p }}</li>
+                          {% endfor %}
+                      </ul>
+                      {% else %}
+                      N/A
+                      {% endif %}
+                  </td>
+                  <td data-label="Notes">{{ c.notes or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+      </div>
       {% else %}
       <div class="no-data-card">
-        <i class="fas fa-user-slash fa-3x"></i>
-        <p>Aucun consultation n'a été trouvé dans la base de données.</p>
+        <i class="fas fa-file-medical-slash fa-3x"></i>
+        <p>Aucune consultation n'a été trouvée dans la base de données.</p>
       </div>
       {% endif %}
     </div>
-  </div>
-</div>
 
+</main>
 
+<script src="{{ url_for('static', filename='js/manage_entity.js') }}"></script>
 </body>
 </html>

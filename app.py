@@ -2,7 +2,7 @@ from flask import Flask, render_template, json , flash, redirect, url_for , requ
 import services.mongo_service as mongo_service 
 from models import utilisateur 
 from services.synch_service import sync_all
-from services.auth_service import AuthService, login_required, admin_required, medecin_required, patient_required
+from services.auth_service import AuthService, login_required
 from bson.objectid import ObjectId 
 from datetime import datetime
 
