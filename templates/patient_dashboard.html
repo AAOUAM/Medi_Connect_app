@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord patient</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_dashboard.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>Mon historique médical</h2>
+
+    <!-- Filtres -->
+    <form method="get" class="filters">
+        <div class="form-group">
+            <label for="medecin">Filtrer par médecin</label>
+            <input type="text" name="medecin" id="medecin" placeholder="Nom du médecin" value="{{ request.args.get('medecin', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="date">Filtrer par date</label>
+            <input type="date" name="date" id="date" value="{{ request.args.get('date', '') }}">
+        </div>
+        <div class="form-actions">
+            <button type="submit">Filtrer</button>
+            <a href="{{ url_for('patient_dashboard') }}">Réinitialiser</a>
+        </div>
+    </form>
+
+    <!-- Résultats -->
+    {% if consultations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Médecin</th>
+                    <th>Date</th>
+                    <th>Motif</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consultations %}
+                <tr>
+                    <td>{{ c.medecin }}</td>
+                    <td>{{ c.date }}</td>
+                    <td>{{ c.motif }}</td>
+                    <td>{{ c.notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert">Aucune consultation trouvée.</div>
+    {% endif %}
+</div>
+
+</body>
+</html>
