@@ -76,6 +76,19 @@ def delete_medecin_node(id_value):
     with driver.session() as session:
         session.run("MATCH (m:Medecin {id: $id}) DETACH DELETE m", id=id_value)
 
+def upsert_medecin_node(medecin_data):
+  with driver.session() as session:
+    session.run("""
+      MERGE (m:Medecin {id: $id})
+      SET m.nom = $nom,
+        m.specialite = $specialite,
+        m.adresse = $adresse,
+        m.num_tel = $num_tel,
+        m.email = $email,
+        m.disponibilite = $disponibilite,
+        m.experiences = $experiences
+    """, **medecin_data)
+
 
 # === UTILISATEURS (CRUD) ===
 

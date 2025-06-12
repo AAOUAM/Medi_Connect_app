@@ -1,13 +1,14 @@
 from services.mongo_service import (
     get_all_patients,
     get_all_medecins,
-    get_all_consultations
+    get_all_consultations 
 )
 from services.neo4j_service import (
     create_patient_node,
     create_medecin_node,
     delete_patient_node,
     delete_medecin_node,
+    upsert_medecin_node,
     driver
 )
 
@@ -34,20 +35,19 @@ def sync_patients():
 # === MEDECINS ===
 
 def sync_medecins():
-    medecins = get_all_medecins()
-    for medecin in medecins:
-        medecin_data = {
-            "id": str(medecin["_id"]),
-            "nom": medecin.get("nom", ""),
-            "specialite": medecin.get("specialite", ""),
-            "adresse": medecin.get("adresse", ""),
-            "num_tel": medecin.get("num_tel", ""),
-            "email": medecin.get("email", ""),
-            "disponibilite": medecin.get("disponibilite", []),
-            "experiences": medecin.get("experiences", "")
-        }
-        delete_medecin_node(medecin_data["id"])
-        create_medecin_node(medecin_data)
+  medecins = get_all_medecins()
+  for medecin in medecins:
+    medecin_data = {
+      "id": str(medecin["_id"]),
+      "nom": medecin.get("nom", ""),
+      "specialite": medecin.get("specialite", ""),
+      "adresse": medecin.get("adresse", ""),
+      "num_tel": medecin.get("num_tel", ""),
+      "email": medecin.get("email", ""),
+      "disponibilite": medecin.get("disponibilite", []),
+      "experiences": medecin.get("experiences", "")
+    }
+    upsert_medecin_node(medecin_data)
 
 # === CONSULTATIONS ===
 

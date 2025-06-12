@@ -1,12 +1,13 @@
 from flask import Flask, render_template, json , flash, redirect, url_for , request ,  session, flash 
 import services.mongo_service as mongo_service 
+from services.mongo_service import get_patient_by_id, update_patient , get_medecin_by_id, update_medecin
 from models import utilisateur 
 from services.synch_service import sync_all
 from services.auth_service import AuthService, login_required
 from bson.objectid import ObjectId 
 from datetime import datetime
 
-from models import patient
+from models import patient as patient
 from models import medecin  
 from models import utilisateur
 
@@ -206,13 +207,12 @@ def edit_patient(patient_id_str):
             'cin': request.form.get('cin', '').strip(),
         }
 
-        patient.modify_patient(patient_id_str, updated_data)
+        update_patient(patient_id_str, updated_data)
         sync_all()
         return redirect(url_for('manage_patients'))
 
-    patient = patient.get_patient(patient_id_str)
-    return render_template('patient_form.html', patient=patient)
-
+    patient_data = get_patient_by_id(patient_id_str)
+    return render_template('patient_form.html', patient=patient_data)
 
 @app.route('/delete_patient/<string:patient_id_str>', methods=['POST'])
 def delete_patient(patient_id_str):
@@ -243,25 +243,27 @@ def add_medecin():
 
 @app.route('/admin/medecins/edit/<string:medecin_id>', methods=['GET', 'POST'])
 def edit_medecin(medecin_id):
-    medecin_data = medecin.get_medecin(medecin_id)
-    if not medecin_data:
-        return "Médecin non trouvé", 404
+        medecin_data = get_medecin_by_id(medecin_id)
+        if not medecin_data:
+            return "Médecin non trouvé", 404
 
-    if request.method == 'POST':
-        updated_data = {
-            'nom': request.form['nom'],
-            'specialite': request.form['specialite'],
-            'adresse': request.form['adresse'],
-            'num_tel': request.form.get('num_tel', '').strip(),
-            'email': request.form['email'],
-            'disponibilite': request.form.getlist('disponibilite'),
-            'experiences': request.form['experiences'],
-        }
-        medecin.modify_medecin(medecin_id, updated_data)
-        sync_all()
-        return redirect(url_for('manage_medecins'))
+        if request.method == 'POST':
+            updated_data = {
+                'nom': request.form.get('nom', '').strip(),
+                'specialite': request.form.get('specialite', '').strip(),
+                'adresse': request.form.get('adresse', '').strip(),
+                'num_tel': request.form.get('num_tel', '').strip(),
+                'email': request.form.get('email', '').strip(),
+                'disponibilite': request.form.getlist('disponibilite'),
+                'experiences': request.form.get('experiences', '').strip(),
+            }
 
-    return render_template('medecin_form.html', medecin=medecin_data)
+            update_medecin(medecin_id, updated_data)
+            sync_all()
+            return redirect(url_for('manage_medecins'))
+
+        return render_template('medecin_form.html', medecin=medecin_data)
+
 
 @app.route('/admin/medecins/delete/<string:medecin_id>', methods=['POST'])
 def delete_medecin(medecin_id):

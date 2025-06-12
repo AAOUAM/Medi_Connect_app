@@ -250,7 +250,6 @@ def get_recent_consultations_with_details(limit=5):
 
 
 def get_monthly_consultation_stats():
-    """Calcule les statistiques mensuelles de consultations."""
     consultations_coll = db.consultations
 
     today = datetime.utcnow()
